@@ -1,0 +1,195 @@
+<?php
+
+namespace Bga\Games\MaquisGame;
+
+class DataService {
+    public static function setupRoundData(): string {
+        return '
+            INSERT INTO round_data (morale, active_resistance, resistance_in_game, active_milice)
+            VALUES
+            (6, 3, 5, 3);
+        ';
+    }
+
+    public static function setupBoard(): string {
+        return '
+            INSERT INTO board (space_id, space_name, is_safe, is_field)
+            VALUES
+            (1, "Rue Baradat", FALSE, FALSE),
+            (2, "Fence", FALSE, FALSE),
+            (3, "Pont du Nord", FALSE, FALSE),
+            (4, "Radio B", FALSE, FALSE),
+            (5, "Doctor", FALSE, FALSE),
+            (6, "Poor District", FALSE, FALSE),
+            (7, "Black Market", FALSE, FALSE),
+            (8, "Spare Room", FALSE, FALSE),
+            (9, "Radio A", FALSE, FALSE),
+            (10, "Spare Room", FALSE, FALSE),
+            (11, "Pont Leveque", FALSE, FALSE),
+            (12, "Grocer", FALSE, FALSE),
+            (13, "Spare Room", FALSE, FALSE),
+            (14, "Field", FALSE, TRUE),
+            (15, "Cafe", FALSE, FALSE),
+            (16, "Safe House", TRUE, FALSE),
+            (17, "Field", FALSE, TRUE);
+        ';
+    }
+
+    public static function setupActions(): string {
+        return '
+            INSERT INTO action (action_id, action_name, action_description, is_safe)
+            VALUES
+            (1, "getWeapon", "Pay 1 money to gain 1 weapon", FALSE),
+            (2, "getIntel", "Gain 1 intel", FALSE),
+            (3, "airdrop", "Airdop supplies onto an empty field", FALSE),
+            (4, "getMedicine", "Gain 1 medicine", FALSE),
+            (5, "payForMorale", "Pay 1 food and 1 medicine to gain 1 morale", TRUE),
+            (6, "getMoneyForFood", "Pay 1 food to gain 1 money and lose 1 morale", FALSE),
+            (7, "getSpareRoom", "Pay 2 money to gain a spare room", TRUE),
+            (8, "getFood", "Gain 1 food", FALSE),
+            (9, "getWorker", "Pay 1 food to gain 1 worker", FALSE),
+            (10, "getMoneyForMedicine", "Pay 1 medicine to gain 1 money and lose 1 morale", FALSE),
+            (11, "collectItems", "Collect items", FALSE),
+            (12, "writeGraffiti", "Write anti-fascist graffiti", FALSE),
+            (13, "completeOfficersMansionMission", "Complete Mission", TRUE),
+            (14, "completeMiliceParadeDayMission", "Complete Mission", TRUE),
+            (15, "getMoney", "Gain 1 money", FALSE),
+            (16, "getExplosives", "Pay 1 medicine to gain 1 explosives", FALSE),
+            (17, "get3Food", "Gain 3 food", FALSE),
+            (18, "get3Medicine", "Gain 3 medicine", FALSE),
+            (19, "increaseMorale", "Increase morale by 1", TRUE),
+            (20, "getPoison", "Pay 2 medicine to gain 1 poison", FALSE),
+            (21, "getFakeId", "Pay 1 money and 2 intel to gain 1 fake id", FALSE),
+            (22, "infiltrateFactory", "Infiltrate Factory", TRUE),
+            (23, "sabotageFactory", "Sabotage Factory", TRUE),
+            (24, "deliverIntel", "Deliver 2 Intel", TRUE);
+        ';
+    }
+
+    public static function setupBoardActions(): string {
+        return '
+            INSERT INTO board_action (space_id, action_id)
+            VALUES
+            (2, 1),
+            (4, 2),(4, 3),
+            (5, 4),
+            (6, 5),
+            (7, 6), (7, 10),
+            (8, 7),
+            (9, 2),(9, 3),
+            (10, 7),
+            (12, 8),
+            (13, 7),
+            (14, 11),
+            (15, 9),
+            (17, 11);
+        ';
+    }
+
+    public static function setupBoardPaths(): string {
+        return '
+            INSERT INTO board_path (space_id_start, space_id_end)
+            VALUES
+            (1, 2),
+            (1, 5),
+
+            (2, 1),
+            (2, 6),
+
+            (3, 6),
+            (3, 7),
+
+            (4, 7),
+            (4, 8),
+
+            (5, 1),
+            (5, 9),
+            (5, 10),
+            (5, 11),
+
+            (6, 2),
+            (6, 3),
+            (6, 7),
+            (6, 11),
+
+            (7, 3),
+            (7, 4),
+            (7, 6),
+            (7, 8),
+            (7, 12),
+
+            (8, 4),
+            (8, 7),
+
+            (9, 5),
+            (9, 10),
+
+            (10, 5),
+            (10, 9),
+
+            (11, 5),
+            (11, 6),
+            (11, 16),
+
+            (12, 7),
+            (12, 13),
+            (12, 16),
+
+            (13, 12),
+
+            (14, 15),
+
+            (15, 14),
+            (15, 16),
+
+            (16, 11),
+            (16, 12),
+            (16, 15),
+            (16, 17),
+
+            (17, 16)
+        ';
+    }
+
+    public static function setupResources(): string {
+        return '
+            INSERT INTO resource (resource_name)
+            VALUES
+            ("food"),
+            ("medicine"),
+            ("money"),
+            ("explosives"),
+            ("weapon"),
+            ("intel"),
+            ("poison"),
+            ("fakeID")
+        ;';
+    }
+
+    public static function setupMissions(): string {
+        return '
+            INSERT INTO mission (mission_name)
+            VALUES
+            ("Milice Parade Day"),
+            ("Officer\'s Mansion"),
+            ("Sabotage"),
+            ("Underground newspaper"); 
+        ';
+    }
+
+    public static function setupRooms(): string {
+        return '
+            INSERT INTO room (room_name)
+            VALUES
+            ("Informant"),
+            ("Counterfeiter"),
+            ("Safe House"),
+            ("Chemist\'s Lab"),
+            ("Smuggler"),
+            ("Propagandist"),
+            ("Fixer"),
+            ("Pharmacist"),
+            ("Forger");
+        ';
+    }
+}

@@ -1,0 +1,688 @@
+/**
+ *------
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * MaquisSolo implementation : © <Your name here> <Your email address here>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * maquissolo.css
+ *
+ * MaquisSolo stylesheet
+ *
+ */
+
+/*
+    This is the CSS stylesheet of your game User Interface.
+    
+    Styles defined on this file will be applied to the HTML elements you define in your
+    HTML template (maquissolo_maquissolo.tpl), and to HTML elements you create dynamically
+    (in maquissolo.js).
+    
+    Usually, you are using CSS to:
+    
+    1°) define the overall layout of your game
+        (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
+
+    2°) create your CSS-sprites:
+        All images of your games should be gathered into a small number of image files. Then, using
+        background-image and background-position CSS properties, you create HTML blocks that can 
+        display these images correctly (see example below).
+    
+    3°) ... anything else:
+        It is really easy to add and remove CSS classes dynamically from your Javascript with
+        dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
+        (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
+        very often, using CSS classes for the logic of your user interface allow you to do complex
+        thing easily.
+        
+        
+     Note: on the production platform, this file will be compressed and comments will be removed.
+           Consequently, don't hesitate to put as many comments as necessary.
+*/
+
+
+/* Note: you must not use any @import directive */
+
+.current_player_is_active #page-title, .gamestate_gameEnd #page-title, #page-title {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background-color: #fefae1;
+}
+
+#game_play_area {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+}
+
+
+
+/* #maintitlebar_content > * {
+    min-height: 34px;
+} */
+
+/* Icons */
+
+.worker-icon {
+    background-size: 50%;
+    background-image: url('img/Meeples.png');
+    background-position-y: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    position: absolute;
+}
+
+.resistance-worker-icon {
+    background-position-x: 30%;
+}
+
+
+/* Components */
+
+.worker {
+    width: 64px;
+    aspect-ratio: 1;
+    background-size: 350%;
+    background-image: url('img/Meeples.png');
+    background-position-y: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    position: absolute;
+}
+
+@media (min-width: 1680px) {
+    .worker {
+        width: 3.5vw;
+    }
+}
+
+.worker-highlight {
+    border: 1px solid red;
+    box-shadow: 2px 2px 4px whitesmoke;
+    cursor: pointer;
+}
+
+.resistance {
+    background-position-x: 30%;
+}
+
+.milice {
+    background-position-x: 67%;
+}
+
+.soldier {
+    background-position-x: 100%;
+}
+
+.card {
+    width: 156px;
+    aspect-ratio: 0.714;
+    border-radius: 10px;
+    background-repeat: no-repeat;
+    border: 2px solid black;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+@media (min-width: 1680px) {
+    .card {
+        width: 10vw;
+    }
+}
+
+.marker {
+    width: 18px;
+    aspect-ratio: 1;
+    background-size: 700%;
+    background-position-y: center;
+    background-image: url('img/Markers.png');
+    position: absolute;
+}
+
+@media (min-width: 1680px) {
+    .marker {
+        width: 16%;
+    }
+}
+
+.token {
+    width: 60px;
+    height: 60px;
+    background-image: url('img/Tokens.png');
+    background-size: 304%;
+}
+
+.food-token {
+    background-position-y: center;
+    background-position-x: -50%;
+}
+
+.money-token {
+    background-position-x: -50%; 
+}
+
+#board-and-missions {
+    width: 688px;
+    margin: 32px;
+}
+
+
+@media (min-width: 1680px) {
+    #board-and-missions {
+        width: 40vw;
+    }
+}
+
+#mission-cards {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.mission-slot {
+    width: fit-content;
+    position: relative;
+    perspective: 1000px;
+}
+
+#mission-slot-1 {
+    left: 24%;
+}
+
+#mission-slot-2 {
+    left: 24.9%;
+}
+
+.mission-card {
+}
+
+.mission-card-front, .mission-card-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-image: url('img/Mission_Cards_0star.jpg');
+    background-size: 400%;
+    border-radius: 10px;
+    backface-visibility: hidden;
+}
+
+.mission-card-back {
+    background-position-x: 66.7%;
+    /* backface-visibility: visible; */
+    transform: rotateY(180deg);
+}
+
+.flipped {
+    transform: rotateY(180deg);
+}
+
+.flipped > .mission-space {
+    display: none;
+} 
+
+#mission-1 > .mission-card-front {
+    background-position-x: 0;
+}
+
+#mission-2 > .mission-card-front {
+    background-position-x: 33.3%;
+}
+
+#mission-3 > .mission-card-face {
+    background-image: url('img/Mission_Cards_1star.jpg');
+    background-size: 300%;
+}
+
+#mission-3 > .mission-card-back, #mission-4 > .mission-card-back {
+    background-position-x: 100%;
+    background-position-y: bottom;
+}
+
+#mission-3 > .mission-space-1, #mission-4 > .mission-space-1 {
+    left: 8%;
+}
+
+#mission-3 > .mission-space-2, #mission-4 > .mission-space-2 {
+    left: 36%;
+}
+
+#mission-4 > .mission-card-face {
+    background-image: url('img/Mission_Cards_1star.jpg');
+    background-size: 300%;
+}
+
+#mission-4 > .mission-card-front {
+    background-position-x: 50%;
+}
+
+#left-area > * {
+    padding: 5%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#help-card {
+    background-image: url('img/Mission_Cards_0star.jpg');
+    background-position-x: 100%;
+    background-size: 400%;
+}
+
+#morale-and-soldiers-track {
+    background-size: cover;
+    background-image: url('img/Tracking_card_Patrol_back.jpg');
+    position: relative;
+}
+
+#morale-track, #soldiers-track {
+    position: absolute;
+    left: 7%;
+    width: 86%;
+    aspect-ratio: 2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: space-between;
+}
+
+#morale-track {
+    top: 17.5%;
+}
+
+#soldiers-track {
+    top: 62.5%;
+}
+
+.morale-track-space, .soldiers-track-space {
+    width: 22%;
+    height: 43%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* border: 1px solid green; */
+}
+
+#marker-morale {
+    background-position-x: 5.7%;
+}
+
+#marker-soldiers {
+    background-position-x: 92.7%;
+}
+
+#patrol-cards {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+#patrol-deck {
+    background-size: cover;
+    background-position-x: right;
+    background-image: url('img/Tracking_card_Patrol_back.jpg');
+}
+
+#board {
+    width: 688px;
+    aspect-ratio: 1.43;
+    background-size: contain;
+    background-image: url('img/Board.jpg');
+    position: relative;
+    border: 2px solid black;
+}
+
+@media (min-width: 1680px) {
+    #board {
+        width: 100%;
+    }
+}
+
+.space {
+    z-index: 2;
+    position: absolute;
+}
+
+.board-space {
+    width: 14%;
+    aspect-ratio: 1;
+}
+
+.mission-space {
+    width: 27%;
+    height: 13.5%;
+    top: 50.5%;
+    left: 65%
+}
+
+.room-tile-space {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: -4%;
+    top: -2%;
+}
+
+@media (min-width: 1680px) {
+    .room-tile-space > .room-tile {
+        width: 6.15vw;
+        height: 6.15vw;
+    }
+}
+
+.token-spaces {
+    width: 50%;
+    height: 100%;
+    /* border: 1px red solid; */
+}
+
+.token-space {
+    position: absolute;
+    width: 50%;
+    height: 20%;
+    /* border: 1px green solid; */
+}
+
+.worker-space {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.background-space {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.board-space > .background-space {
+    border-radius: 50%;
+}
+
+.marker-space {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 50%;
+}
+
+.marker-mission {
+    background-position: 64%;
+}
+
+@media (min-width: 1680px) {
+    .marker-mission {
+        width: 50%;
+    }
+}
+
+.available-space {
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+}
+
+.space-with-available-worker {
+    background-color: rgba(255, 255, 0, 0.5);
+    cursor: pointer;
+}
+
+.active-space {
+    background-color: rgba(166, 82, 169, 0.5);
+}
+
+.space-with-milice {
+    background-color: rgba(245, 11, 42, 0.5);
+    cursor: pointer;
+}
+
+.empty-field {
+    background-color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+}
+
+#round-number-spaces {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    top: 2.45%;
+    left: 2.8%;
+    width: 18px;
+    height: 94.5%;
+    border: 1px transparent solid;
+}
+
+#help-card, #morale-and-soldiers-track, #patrol-discard, #patrol-deck {
+    margin: 34px;
+}
+
+.round-number-space {
+    width: 18px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    /* border: 1px green solid; */
+}
+
+#marker-round {
+    background-position-x: 35.5%;
+}
+
+@media (min-width: 1680px) {
+    #marker-round {
+        width: 1.3vw;
+    }
+}
+
+.patrol-card {
+    position: absolute;
+    background-image: url('img/Patrol_cards.jpg');
+    background-repeat: no-repeat;
+    background-size: 503%;
+    z-index: -1
+}
+
+#patrol-1 {
+    background-position-x: 49%;
+}
+
+#patrol-2 {
+    background-position-x: 24%;
+}
+
+#patrol-3 {
+    background-position-x: 0%;
+}
+
+#patrol-4 {
+    background-position-x: 24%;
+    background-position-y: 100%;
+}
+
+#patrol-5 {
+    background-position-x: 0;
+    background-position-y: 100%;
+}
+
+#patrol-6 {
+    background-position-x: 99%;
+}
+
+#patrol-7 {
+    background-position-x: 74%;
+}
+
+#patrol-8 {
+    background-position-x: 99%;
+    background-position-y: 100%;
+}
+
+#patrol-9 {
+    background-position-x: 74%;
+    background-position-y: 100%;
+}
+
+#patrol-10 {
+    background-position-x: 49%;
+    background-position-y: 100%;
+}
+
+#space-1 {
+    left: 9%;
+    top: 14%;
+}
+
+#space-2 {
+    left: 28.3%;
+    top: 3%;
+}
+
+#space-3 {
+    left: 52.5%;
+    top: 2.7%;
+}
+
+#space-4 {
+    left: 78.15%;
+    top: 4.1%;
+}
+
+#space-5 {
+    left: 26.1%;
+    top: 27.4%;
+}
+
+#space-6 {
+    left: 44.1%;
+    top: 26.2%;
+}
+
+#space-7 {
+    left: 63.73%;
+    top: 24.6%;
+}
+
+#space-8 {
+    left: 82%;
+    top: 29.5%;
+}
+
+#space-9 {
+    left: 8.9%;
+    top: 40.2%;
+}
+
+#space-10 {
+    left: 24.9%;
+    top: 52.2%;
+}
+
+#space-11 {
+    left: 44.4%;
+    top: 51.4%;
+}
+
+#space-12 {
+    left: 63.5%;
+    top: 50.5%;
+}
+
+#space-13 {
+    left: 82%;
+    top: 55.5%;
+}
+
+#space-14 {
+    left: 10.5%;
+    top: 74.2%;
+}
+
+#space-15 {
+    left: 32%;
+    top: 75.4%;
+}
+
+#space-16 {
+    left: 50.6%;
+    top: 75.3%;
+}
+
+#space-17 {
+    left: 69.5%;
+    top: 76%;
+}
+
+#room-tiles {
+    position: relative;
+    width: 216px;
+    height: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.room-tile {
+    width: 106px;
+    height: 106px;
+    z-index: 0;
+    background-image: url('img/Spare_rooms2.png');
+    background-size: 300%;
+}
+
+@media (min-width: 1680px) {
+    #room-tiles {
+        width: 13.3vw;
+    }
+
+    .room-tile {
+        width: 6.65vw;
+        height: 6.65vw;
+    }
+}
+
+#room-tile-2 {
+    background-position-x: center;
+}
+
+#room-tile-3 {
+    background-position-x: right;
+}
+
+#room-tile-4 {
+    background-position-y: center;
+}
+
+#room-tile-5 {
+    background-position-y: center;
+    background-position-x: center;
+}
+
+#room-tile-6 {
+    background-position-y: center;
+    background-position-x: right;
+}
+
+#room-tile-7 {
+    background-position-y: bottom;
+}
+
+#room-tile-8 {
+    background-position-y: bottom;
+    background-position-x: center;
+}
+
+#room-tile-9 {
+    background-position-y: bottom;
+    background-position-x: right;
+}

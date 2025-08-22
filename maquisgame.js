@@ -1,0 +1,636 @@
+/**
+ *------
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * MaquisSolo implementation : © <Your name here> <Your email address here>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * maquissolo.js
+ *
+ * MaquisSolo user interface script
+ * 
+ * In this file, you are describing the logic of your user interface, in Javascript language.
+ *
+ */
+
+define([
+    "dojo","dojo/_base/declare",
+    "ebg/core/gamegui",
+    "ebg/counter"
+],
+function (dojo, declare) {
+    return declare("bgagame.maquisgame", ebg.core.gamegui, {
+        constructor: function() {
+            // console.log('maquisgame constructor');
+              
+            // Here, you can init the global variables of your user interface
+            // Example:
+            // this.myGlobalValue = 0;
+        },
+        
+        setup: function(gamedatas) {
+            // console.log("Starting game setup");
+
+            let current_round = parseInt(gamedatas.roundData.round);
+            let current_morale = parseInt(gamedatas.roundData.morale);
+
+            let placed_workers = parseInt(gamedatas.roundData.placed_resistance);
+            let active_workers = parseInt(gamedatas.roundData.active_resistance);
+            let resistanceInGame = parseInt(gamedatas.roundData.resistance_in_game);
+            let active_milice = parseInt(gamedatas.roundData.active_milice);
+            let active_soldiers = parseInt(gamedatas.roundData.active_soldiers);
+
+            let board = gamedatas.board;
+            let spacesWithItems = Object.values(gamedatas.spacesWithItems);
+            let spacesWithRooms = Object.values(gamedatas.spacesWithRooms);
+            let discardedPatrolCards = gamedatas.discardedPatrolCards;
+            let resources = gamedatas.resources;
+            let completedMissions = Object.values(gamedatas.completedMissions);
+            let selectedMissions = Object.values(gamedatas.selectedMissions);
+            let rooms = Object.values(gamedatas.rooms);
+
+            let player_id = gamedatas.currentPlayerID;
+
+            let player_board_div = $('player_board_' + player_id);
+
+            // PLAYER INFO
+
+            dojo.place(`
+                <div class="workers">
+                    <span>Placed workers: </span><span id="placed-resistance">${placed_workers}</span></br>
+                    <span>Active resistance: </span><span id="active-resistance">${active_workers}</span></br>
+                    <span>Resistance in game: </span><span id="resistance-in-game">${resistanceInGame}</span></br>
+                </div>
+                <div id="resources"></div>
+            `, player_board_div);
+
+            // RESOURCES
+            
+            Object.values(resources).forEach(({resource_name, quantity, available}) => dojo.place(`
+                <span>${resource_name} </span><span id=${resource_name}-quantity>${quantity}</span>/<span id=${resource_name}-available>${available}</span></br>    
+            `, 'resources'));
+
+            dojo.place(`
+                <div id="board-and-missions">
+                    <div id="mission-cards">
+                        <div id="mission-slot-1" class="mission-slot">
+                            <div id="mission-${selectedMissions[0].mission_id}" class="card mission-card">
+                                <div class="mission-card-back mission-card-face"></div>
+                                <div class="mission-card-front mission-card-face"></div>
+                                <div id="space-18" class="space mission-space mission-space-1">
+                                    <div id="space-18-worker-space" class="worker-space"></div>
+                                    <div id="space-18-marker-space" class="marker-space"></div>
+                                    <div id="space-18-background-space" class="background-space"></div>
+                                </div>
+                                <div id="space-19" class="space mission-space mission-space-2">
+                                    <div id="space-19-worker-space" class="worker-space"></div>
+                                    <div id="space-19-marker-space" class="marker-space"></div>
+                                    <div id="space-19-background-space" class="background-space"></div>
+                                </div>
+                                <div id="space-20" class="space mission-space mission-space-3">
+                                    <div id="space-20-worker-space" class="worker-space"></div>
+                                    <div id="space-20-marker-space" class="marker-space"></div>
+                                    <div id="space-20-background-space" class="background-space"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="mission-slot-2" class="mission-slot">
+                            <div id="mission-${selectedMissions[1].mission_id}" class="card mission-card">
+                                <div class="mission-card-back mission-card-face"></div>
+                                <div class="mission-card-front mission-card-face"></div>
+                                <div id="space-21" class="space mission-space mission-space-1">
+                                    <div id="space-21-worker-space" class="worker-space"></div>
+                                    <div id="space-21-marker-space" class="marker-space"></div>
+                                    <div id="space-21-background-space" class="background-space"></div>
+                                </div>
+                                <div id="space-22" class="space mission-space mission-space-2">
+                                    <div id="space-22-worker-space" class="worker-space"></div>
+                                    <div id="space-22-marker-space" class="marker-space"></div>
+                                    <div id="space-22-background-space" class="background-space"></div>
+                                </div>
+                                <div id="space-23" class="space mission-space mission-space-3">
+                                    <div id="space-23-worker-space" class="worker-space"></div>
+                                    <div id="space-23-marker-space" class="marker-space"></div>
+                                    <div id="space-23-background-space" class="background-space"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="board">
+                        <div id="spaces"></div>
+                        <div id="round-number-spaces"></div>
+                    </div>
+                </div>
+                <div>
+                    <div id="morale-and-soldiers-track" class="card">
+                        <div id="morale-track"></div>
+                        <div id="soldiers-track"></div>
+                    </div>
+                    <div id="room-tiles"></div>
+                </div>
+                <div id="patrol-cards">
+                    <div id="patrol-deck" class="card"></div>
+                    <div id="patrol-discard" class="card"></div>
+                </div>
+            `, 'game_play_area');
+
+            // FLIP MISSIONS 
+
+            completedMissions.forEach(mission => this.flipMission(mission['mission_id']));
+
+            // MORALE
+
+            for (let i = 0; i <= 7; i++) {
+                dojo.place(`<div id="morale-track-space-${i}" class="morale-track-space"></div>`, "morale-track");
+            }
+
+            dojo.place(`<div id="marker-morale" class="marker"></div>`, `morale-track-space-${current_morale}`);
+
+            // SOLDIERS
+
+            for (let i = 0; i <= 5; i++) {
+                dojo.place(`<div id="soldiers-track-space-${i}" class="soldiers-track-space"></div>`, "soldiers-track");
+            }
+
+            dojo.place('<div id="marker-soldiers" class="marker"></div>', `soldiers-track-space-${active_soldiers}`);
+
+            // ROUND NUMBER
+            
+            for (let i = 0; i < 16; i++) {
+                dojo.place(`<div id="round-number-space-${i}" class="round-number-space"></div>`, 'round-number-spaces')
+            }
+
+            dojo.place(`<div id="marker-round" class="marker"></div>`, `round-number-space-${current_round}`);
+            
+            // BOARD SPACES
+
+            for (let i = 0; i < 17; i++) {
+                dojo.place(`
+                    <div id="space-${i + 1}" class="space board-space">
+                        <div id="space-${i + 1}-room-tile-space" class="room-tile-space"></div>
+                        <div id="space-${i + 1}-token-spaces" class="token-spaces"></div>
+                        <div id="space-${i + 1}-marker-space" class="marker-space"></div>
+                        <div id="space-${i + 1}-worker-space" class="worker-space"></div>
+                        <div id="space-${i + 1}-background-space" class="background-space"></div>
+                    </div>
+                `, 'spaces');
+
+                for (let j = 0; j < 5; j++) {
+                    dojo.place(`
+                        <div 
+                            id="space-${i + 1}-token-space-${j + 1}" 
+                            class="token-space"
+                            style="top: ${20 * j}%"
+                        ></div>
+                    `, `space-${i + 1}-token-spaces`);
+                }
+            }
+
+            for (let i = 1; i <= 19; i++) {
+                if (board[i]) {
+                    if (parseInt(board[i].has_worker)) {
+                        this.placeWorker(i);
+                    } else if (parseInt(board[i].has_milice)) {
+                        this.placeMilice(i);
+                    } else if (parseInt(board[i].has_soldier)) {
+                        this.placeSoldier(i);
+                    }
+
+                    if (parseInt(board[i].has_marker)) {
+                        this.placeMissionMarker(board[i].space_id)
+                    }
+                }
+            }
+
+            spacesWithItems.forEach(space => {
+                this.placeItems(space.space_id, space.item, space.quantity);
+            });
+
+            spacesWithRooms.forEach(space => {
+                this.placeRoomTile(space.space_id, space.room_id);
+            });
+
+            // ROOM TILES
+
+            rooms.filter(room => parseInt(room.available)).forEach((room, i) => dojo.place(`
+                <div id="room-tile-${room.room_id}" class="room-tile"></div>
+            `, `room-tiles`));
+
+            Object.values(discardedPatrolCards).forEach((card) => this.discardPatrolCard(card.type_arg));
+
+            // Event Listeners
+
+            dojo.query('.background-space').connect('click', this, "onSpaceClicked");
+ 
+            // Setup game notifications to handle (see "setupNotifications" method below)
+            this.setupNotifications();
+
+            // console.log("Ending game setup");
+        },
+
+        ///////////////////////////////////////////////////
+        //// Game & client states
+        
+        onEnteringState: function(stateName, args) {
+            console.log('Entering state: ' + stateName, args);
+            
+            switch(stateName) {
+                case 'placeWorker':
+                    const emptySpaces = Object.values(args.args);
+                                        
+                    emptySpaces.forEach(spaceID => {
+                        let space = dojo.byId(`space-${spaceID}-background-space`);
+                        if (space) dojo.addClass(space, 'available-space');
+                    });
+
+                    break;
+
+                case 'activateWorker':
+                    const spacesWithWorkers = Object.values(args.args.spaces);
+
+                    spacesWithWorkers.forEach(spaceID => {
+                        let space = dojo.byId(`space-${spaceID}-background-space`);
+                        if (space) dojo.addClass(space, 'space-with-available-worker');
+                    });                        
+
+                    break;
+
+                case 'takeAction':
+                    console.log(args);
+                    const activeSpaceID = args.args.activeSpace;
+
+                    let activeSpace = dojo.byId(`space-${activeSpaceID}-background-space`);
+                    if (activeSpace) dojo.addClass(activeSpace, 'active-space');
+
+                    break;
+
+                case 'airdropSelectField':
+                    const emptyFields = Object.values(args.args);
+                    
+                    emptyFields.forEach(field => {
+                        let space = dojo.byId(`space-${field.space_id}-background-space`);
+                        if (space) dojo.addClass(space, 'empty-field');
+                    });
+
+                    break;
+
+                case 'shootMilice':
+                    const spacesWithMilice = Object.values(args.args);
+
+                    spacesWithMilice.forEach(spaceID => {
+                        let space = dojo.byId(`space-${spaceID}-background-space`);
+                        if (space) dojo.addClass(space, 'space-with-milice');
+                    });
+            }   
+        },
+
+        
+        onLeavingState: function(stateName) {
+            console.log('Leaving state: ' + stateName);
+            
+            switch(stateName)
+            {
+                case 'placeWorker':
+                    dojo.query('.available-space').removeClass('available-space');
+                    break;
+
+                case 'activateWorker':
+                    dojo.query('.space-with-available-worker').removeClass('space-with-available-worker');
+                    break;
+
+                case 'takeAction':
+                    dojo.query('.active-space').removeClass('active-space');
+                    break;
+
+                case 'airdropSelectSupplies':
+                    dojo.query('.empty-field').removeClass('empty-field');
+                    break;
+
+                case 'shootMilice':
+                    dojo.query('.space-with-milice').removeClass('space-with-milice');
+            }          
+        }, 
+        
+        onUpdateActionButtons: function(stateName, args) {
+            // console.log('onUpdateActionButtons: ' + stateName, args);
+                      
+            if(this.isCurrentPlayerActive())
+            {            
+                switch(stateName) {
+                    case 'activateWorker':
+                        if (args.canShoot) {
+                            this.addActionButton('actDeclareShootingMilice-btn', _('Shoot milice'), () => this.bgaPerformAction("actDeclareShootingMilice"), null, null, 'gray');
+                        }
+                        break;
+
+                    case 'takeAction':
+                        Object.values(args.actions).forEach(action => this.addActionButton('actTakeAction_' + `${action.action_name}`, _(`${action.action_description}`), () => this.bgaPerformAction("actTakeAction", { actionName: action.action_name }), null, null, action.action_name == 'return' ? 'gray' : 'blue'));
+                        break;
+
+                    case 'airdropSelectSupplies':
+                        let options = [
+                        [
+                            "food",
+                            "Airdrop 3 food"
+                        ], 
+                        [
+                            "money",
+                            "Airdrop 1 money"
+                        ], 
+                        [
+                            "weapon",
+                            "Airdrop 1 weapon"
+                        ]];
+
+                        options.forEach(option => this.addActionButton('actAirdropSelectSupplies_' + `${option[0]}`, _(`${option[1]}`), () => this.bgaPerformAction("actSelectSupplies", { supplyType: option[0]}), null, null, 'blue'));
+                        break;
+
+                    case 'selectSpareRoom':
+                        console.log(Object.values(args));
+                        Object.values(args).forEach(room => this.addActionButton('actSelectRoom_' + `${room.room_id}`, _(`${room.room_name}`), () => this.bgaPerformAction("actSelectRoom", { roomID: room.room_id}), null, null, 'blue'));
+                }
+            }
+        },        
+
+        ///////////////////////////////////////////////////
+        //// Utility methods
+        
+        placeWorker: async function(spaceID) {
+            const workerIDs = dojo.query(".resistance").map(node => node.id);
+            const workerID = workerIDs.length
+
+            dojo.place(`<div id="resistance-${workerID}" class="worker resistance"></div>`, `space-${spaceID}-worker-space`);            
+            this.placeOnObject(`resistance-${workerID}`, 'player_boards');
+            const animation = this.slideToObject(`resistance-${workerID}`, `space-${spaceID}-worker-space`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+        
+        placeMilice: async function(spaceID) {
+            const miliceIDs = dojo.query(".milice").map(node => node.id);
+            const miliceID = miliceIDs.length;
+
+            dojo.place(`<div id="milice-${miliceID}" class="worker milice"></div>`, `space-${spaceID}-worker-space`);
+            this.placeOnObject(`milice-${miliceID}`, 'player_boards');
+            const animation = this.slideToObject(`milice-${miliceID}`, `space-${spaceID}-worker-space`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        placeSoldier: async function(spaceID) {
+            const soldierIDs = dojo.query(".soldier").map(node => node.id);
+            const soldierID = soldierIDs.length;
+
+            dojo.place(`<div id="soldier-${soldierID}" class="worker soldier"></div>`, `space-${spaceID}-worker-space`);
+            this.placeOnObject(`soldier-${soldierID}`, 'player_boards');
+            const animation = this.slideToObject(`soldier-${soldierID}`, `space-${spaceID}-worker-space`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        discardPatrolCard: async function(patrolCardID) {
+            dojo.place(`<div id="patrol-${patrolCardID}" class="patrol-card card"></div>`, 'patrol-discard');
+            this.placeOnObject(`patrol-${patrolCardID}`, 'patrol-deck');
+            const animation = this.slideToObject(`patrol-${patrolCardID}`, `patrol-discard`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        removeWorker: async function(spaceID) {
+            let space = dojo.byId(`space-${spaceID}-worker-space`);
+            let resistanceID = space.firstElementChild.id;
+
+            const animation = this.slideToObject(`${resistanceID}`, "player_boards");
+            await this.bgaPlayDojoAnimation(animation);
+            dojo.destroy(`${resistanceID}`);
+        },
+
+        removePatrol: async function(spaceID) {
+            let space = dojo.byId(`space-${spaceID}-worker-space`);
+            let patrolID = space.firstElementChild.id;
+
+            const animation = this.slideToObject(`${patrolID}`, "player_boards");
+            await this.bgaPlayDojoAnimation(animation);
+            dojo.destroy(`${patrolID}`);
+        },
+
+        placeItems: async function(spaceID, itemType, quantity) {
+            for (let i = 0; i < quantity; i++) {
+            // let i = 0;
+                dojo.place(`<div id="space-${spaceID}-${itemType}-token-${i + 1}" class="token ${itemType}-token"></div>`, `space-${spaceID}-token-space-${i + 1}`);
+            // this.placeOnObject(`space-${spaceID}-${itemType}-token-${i + 1}`, 'player_boards');
+            // const animation = this.slideToObject(`space-${spaceID}-${itemType}-token-${i + 1}`, `space-${spaceID}-token-space-${i + 1}`);
+            // await this.bgaPlayDojoAnimation(animation);
+            }
+            // const animation = this.slideToObject(`food-token`, `space-${spaceID}`);
+            // await this.bgaPlayDojoAnimation(animation);
+        },
+
+        removeItems: async function(spaceID) {
+            for (let i = 5; i > 0; i--) {
+                let space = dojo.byId(`space-${spaceID}-token-space-${i}`);
+                if (space.firstElementChild) {
+                    let itemTokenID = space.firstElementChild.id;
+                    // const animation = this.slideToObject(`${itemTokenID}`, "player_boards");
+                    // await this.bgaPlayDojoAnimation(animation);
+                    dojo.destroy(`${itemTokenID}`);
+                }
+            }
+        },
+
+        moveRoundMarker: async function(round) {
+            const animation = this.slideToObject("marker-round", `round-number-space-${round}`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        moveMoraleMarker: async function(morale) {
+            const animation = this.slideToObject("marker-morale", `morale-track-space-${morale}`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        moveSoldiersMarker: async function(soldiersNumber) {
+            const animation = this.slideToObject("marker-soldiers", `soldiers-track-space-${soldiersNumber}`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        placeMissionMarker: async function(spaceID) {
+            const markerIDs = dojo.query(".marker-mission").map(node => node.id);
+            const markerID = markerIDs.length
+
+            dojo.place(`<div id="mission-marker-${markerID}" class="marker marker-mission"></div>`, `space-${spaceID}-marker-space`);
+            this.placeOnObject(`mission-marker-${markerID}`, 'player_boards');
+            const animation = this.slideToObject(`mission-marker-${markerID}`, `space-${spaceID}-marker-space`);
+            await this.bgaPlayDojoAnimation(animation);
+        },
+
+        removeMarker: async function(spaceID) {
+            let space = dojo.byId(`space-${spaceID}-marker-space`);
+            let markerID = space.firstElementChild.id;
+
+            const animation = this.slideToObject(`${markerID}`, "player_boards");
+            await this.bgaPlayDojoAnimation(animation);
+            dojo.destroy(`${markerID}`);
+        },
+
+        flipMission: function(missionID) {
+            dojo.toggleClass(dojo.byId(`mission-${missionID}`), 'flipped');
+        },
+
+        placeRoomTile: async function(spaceID, roomID) {
+            dojo.place(`<div id="room-tile-${roomID}" class="room-tile"></div>`, `space-${spaceID}-room-tile-space`);
+
+            // const animation = this.slideToObject(`room-tile-${roomID}`, `space-${spaceID}-room-tile-space`);
+            // await this.bgaPlayDojoAnimation(animation);
+        },
+
+        ///////////////////////////////////////////////////
+        //// Player's action's handlers
+
+        onSpaceClicked: function(evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            var space = evt.currentTarget.id.split('-');
+            var spaceID = space[1];
+            
+            if (evt.currentTarget.classList.contains('available-space')) {
+                this.bgaPerformAction("actPlaceWorker", {
+                    spaceID: spaceID
+                });
+            }
+            else if (evt.currentTarget.classList.contains('space-with-available-worker')) {
+                this.bgaPerformAction("actActivateWorker", {
+                    spaceID: spaceID
+                });
+            }
+            else if (evt.currentTarget.classList.contains('empty-field')) {
+                this.bgaPerformAction("actSelectField", {
+                    spaceID: spaceID
+                });
+            }
+            else if (evt.currentTarget.classList.contains('space-with-milice')) {
+                this.bgaPerformAction("actShootMilice", {
+                    spaceID: spaceID
+                });
+            }
+        },
+        
+        ///////////////////////////////////////////////////
+        //// Reaction to cometD notifications
+
+        setupNotifications: function() {
+            // console.log( 'notifications subscriptions setup' );
+            
+            // TODO: here, associate your game notifications with local methods
+            
+            // Example 1: standard notification handling
+            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
+            
+            // Example 2: standard notification handling + tell the user interface to wait
+            //            during 3 seconds after calling the method in order to let the players
+            //            see what is happening in the game.
+            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
+            // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
+            //
+
+            this.bgaSetupPromiseNotifications();
+        },
+        
+        notif_workerPlaced: function({spaceID}) {
+            this.placeWorker(spaceID);
+        },
+
+        notif_patrolPlaced: function({placeSoldier, spaceID, patrolCardID}) {
+            if (placeSoldier) {
+                this.placeSoldier(spaceID);
+            } else {
+                this.placeMilice(spaceID);
+            }
+            this.discardPatrolCard(patrolCardID);
+        },
+
+        // notif_spaceActivated: function(notif) {
+        //     console.log('notif_workerActivated');
+        //     console.log(notif);
+        // },
+
+        // notif_actionTaken: function(notif) {
+        //     console.log('notif_actionTaken');
+        //     console.log(notif);
+        // },
+
+        // notif_routeChecked: function(notif) {
+        //     console.log('notif_routeChecked');
+        //     console.log(notif);
+        // },
+
+        notif_workerRemoved: function(notif) {
+            this.removeWorker(notif.activeSpace);
+        },
+
+        notif_patrolRemoved: function({spaceID}) {
+            this.removePatrol(spaceID);
+        },
+
+        notif_placedResistanceUpdated: function(notif) {
+            dojo.byId(`placed-resistance`).innerHTML = notif.placedResistance;
+        },
+
+        notif_roundDataUpdated: function({round, morale}) {
+            this.moveRoundMarker(round);
+            this.moveMoraleMarker(morale);
+        },
+
+        notif_moraleUpdated: function({morale}) {
+            this.moveMoraleMarker(morale);
+        },
+
+        notif_resourcesChanged: function({resource_name, quantity, available}) {
+            dojo.byId(`${resource_name}-quantity`).innerHTML = quantity;
+            dojo.byId(`${resource_name}-available`).innerHTML = available;
+        },
+
+        notif_activeResistanceUpdated: function(notif) {
+            console.log(notif);
+            dojo.byId("active-resistance").innerHTML = notif.active_resistance;
+        },
+
+        notif_itemsPlaced: function(notif) {
+            this.placeItems(notif.spaceID, notif.supplyType, notif.quantity);
+        },
+
+        notif_itemsCollected: function(notif) {
+            this.removeItems(notif.spaceID)
+        },
+
+        notif_soldiersUpdated: function({newNumber}) {
+            this.moveSoldiersMarker(newNumber);
+        },
+
+        notif_markerPlaced: function({spaceID}) {
+            this.placeMissionMarker(spaceID);
+        },
+
+        notif_markerRemoved: function({spaceID}) {
+            this.removeMarker(spaceID);
+        },
+
+        notif_missionCompleted: function({missionID}) {
+            // const missionIDs = dojo.query('.mission-card').map(node => node.id);
+            // console.log(missionIDs);
+
+            // dojo.toggleClass(dojo.byId('mission-card-back'), 'flipped');
+            
+
+            this.flipMission(missionID);
+        },
+
+        notif_roomPlaced: function({roomID, spaceID}) {
+            this.placeRoomTile(spaceID, roomID);
+        }
+        // notif_workerArrested: function(notif) {
+        //     console.log('notif_workerArrested');
+        //     console.log(notif);
+
+        //     this.returnWorker(notif.activeSpace);
+        // }
+   });
+});
