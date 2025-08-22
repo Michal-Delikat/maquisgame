@@ -176,27 +176,29 @@ class Game extends \Table {
             } 
         }
 
-        $spaceName = $this->getSpaceNameById($spaceID);
+        if ($spaceID != null) {
+            $spaceName = $this->getSpaceNameById($spaceID);
 
-        $placeSoldier = $this->getPatrolsToPlace() - $roundData['active_soldiers'] < $roundData['placed_milice'];
+            $placeSoldier = $this->getPatrolsToPlace() - $roundData['active_soldiers'] < $roundData['placed_milice'];
 
-        if ($placeSoldier) {
-            $this->updateSpace($spaceID, hasSoldier: true);
-            $this->updatePlacedSoldiers($roundData['placed_soldiers'] + 1);
-        } else {
-            $this->updateSpace($spaceID, hasMilice: true);
-            $this->updatePlacedMilice($roundData['placed_milice'] + 1);
-        }
-        
+            if ($placeSoldier) {
+                $this->updateSpace($spaceID, hasSoldier: true);
+                $this->updatePlacedSoldiers($roundData['placed_soldiers'] + 1);
+            } else {
+                $this->updateSpace($spaceID, hasMilice: true);
+                $this->updatePlacedMilice($roundData['placed_milice'] + 1);
+            }
+            
 
-        $this->notify->all("patrolPlaced", clienttranslate("Patrol placed at $spaceName"), array(
-            "placeSoldier" => $placeSoldier,
-            "spaceID" => $spaceID,
-            "patrolCardID" => $cardID
-        ));
+            $this->notify->all("patrolPlaced", clienttranslate("Patrol placed at $spaceName"), array(
+                "placeSoldier" => $placeSoldier,
+                "spaceID" => $spaceID,
+                "patrolCardID" => $cardID
+            ));
 
-        if ($arrestedOnsite) {
-            $this->arrestWorker($spaceID, arrestedOnSite: true);
+            if ($arrestedOnsite) {
+                $this->arrestWorker($spaceID, arrestedOnSite: true);
+            }
         }
 
         if ($roundData['placed_resistance'] < $roundData['active_resistance']) {
