@@ -39,7 +39,12 @@ function (dojo, declare) {
             let placed_workers = parseInt(gamedatas.roundData.placed_resistance);
             let active_workers = parseInt(gamedatas.roundData.active_resistance);
             let resistanceInGame = parseInt(gamedatas.roundData.resistance_in_game);
-            let active_milice = parseInt(gamedatas.roundData.active_milice);
+
+            let placed_milice = parseInt(gamedatas.roundData.placed_milice);
+            let active_milice = parseInt(gamedatas.activeMilice);
+            let miliceInGame = parseInt(gamedatas.roundData.milice_in_game);
+
+            let placed_soldiers = parseInt(gamedatas.roundData.placed_soldiers);
             let active_soldiers = parseInt(gamedatas.roundData.active_soldiers);
 
             let board = gamedatas.board;
@@ -58,18 +63,51 @@ function (dojo, declare) {
             // PLAYER INFO
 
             dojo.place(`
-                <div class="workers">
-                    <span>Placed workers: </span><span id="placed-resistance">${placed_workers}</span></br>
-                    <span>Active resistance: </span><span id="active-resistance">${active_workers}</span></br>
-                    <span>Resistance in game: </span><span id="resistance-in-game">${resistanceInGame}</span></br>
+                <div id="custom-player-board">
+                    <div id="workers">
+                        <div id="resistance">
+                            <div id="resistance-worker-icon"></div>
+                            <div id="resistance-worker-numbers">
+                                <span id="placed-resistance">${placed_workers}</span>
+                                <span>|</span>
+                                <span id="active-resistance">${active_workers}</span>
+                                <span>|</span>
+                                <span id="resistance-in-game">${resistanceInGame}</span>
+                            </div>
+                        </div>
+                        <div id="milice">
+                            <div id="milice-worker-icon"></div>
+                            <div id="milice-worker-numbers">
+                                <span id="placed-milice">${placed_milice}</span>
+                                <span>|</span>
+                                <span id="active-milice">${active_milice}</span>
+                                <span>|</span>
+                                <span id="milice-in-game">${miliceInGame}</span>
+                            </div>
+                        </div>
+                        <div id="soldiers">
+                            <div id="soldier-worker-icon"></div>
+                            <div id="soldier-worker-numbers">
+                                <span id="placed-soldiers">${placed_soldiers}</span>
+                                <span>|</span>
+                                <span id="active-soldiers">${active_soldiers}</span>
+                                <span>|</span>
+                                <span id="soldiers-in-game">5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div id="resources"></div>
                 </div>
-                <div id="resources"></div>
             `, player_board_div);
 
             // RESOURCES
             
             Object.values(resources).forEach(({resource_name, quantity, available}) => dojo.place(`
-                <span>${resource_name} </span><span id=${resource_name}-quantity>${quantity}</span>/<span id=${resource_name}-available>${available}</span></br>    
+                <div class="resource-box">
+                    <div id="${resource_name}-icon" class="resource-icon"></div>
+                    <span id=${resource_name}-quantity>${quantity}</span>/<span id=${resource_name}-available>${available}</span>
+                <div>    
             `, 'resources'));
 
             dojo.place(`
@@ -327,6 +365,7 @@ function (dojo, declare) {
 
                     case 'takeAction':
                         Object.values(args.actions).forEach(action => this.addActionButton('actTakeAction_' + `${action.action_name}`, _(`${action.action_description}`), () => this.bgaPerformAction("actTakeAction", { actionName: action.action_name }), null, null, action.action_name == 'return' ? 'gray' : 'blue'));
+                        this.addActionButton('actBack', _('Back'), () => this.bgaPerformAction("actBack"), null, null, 'red');
                         break;
 
                     case 'airdropSelectSupplies':
@@ -350,6 +389,11 @@ function (dojo, declare) {
                     case 'selectSpareRoom':
                         console.log(Object.values(args));
                         Object.values(args).forEach(room => this.addActionButton('actSelectRoom_' + `${room.room_id}`, _(`${room.room_name}`), () => this.bgaPerformAction("actSelectRoom", { roomID: room.room_id}), null, null, 'blue'));
+                        break;
+
+                    case 'shootMilice':
+                        this.addActionButton('actReturn', _('Back'), () => this.bgaPerformAction("actBack"), null, null, 'red');
+                        break;
                 }
             }
         },        
@@ -572,6 +616,10 @@ function (dojo, declare) {
 
         notif_placedResistanceUpdated: function(notif) {
             dojo.byId(`placed-resistance`).innerHTML = notif.placedResistance;
+        },
+
+        notif_placedMiliceUpdated: function({placedMilice}) {
+            dojo.byId(`placed-milice`).innerHTML = placedMilice;
         },
 
         notif_roundDataUpdated: function({round, morale}) {

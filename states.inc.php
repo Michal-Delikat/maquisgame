@@ -81,7 +81,7 @@ $machinestates = [
     
     ST_PLAYER_ACTIVATE_WORKER => [
         "name" => "activateWorker",
-        "descriptionmyturn" => clienttranslate('${you} must activate a worker or'),
+        "descriptionmyturn" => clienttranslate('${you} must activate a worker'),
         "type" => "activeplayer",
         "args" => "argActivateWorker",
         "possibleactions" => [
@@ -97,9 +97,10 @@ $machinestates = [
         "type" => "activeplayer",
         "args" => "argShootMilice",
         "possibleactions" => [
-            "actShootMilice"
+            "actShootMilice",
+            "actBack"
         ],
-        "transitions" => ["nextWorker" => ST_GAME_NEXT_WORKER]
+        "transitions" => ["nextWorker" => ST_GAME_NEXT_WORKER, "endGame" => ST_BGA_GAME_END]
     ],
 
     ST_PLAYER_TAKE_ACTION => [
@@ -108,7 +109,8 @@ $machinestates = [
         "type" => "activeplayer",
         "args" => "argTakeAction",
         "possibleactions" => [
-            "actTakeAction"
+            "actTakeAction",
+            "actBack"
         ],
         "transitions" => ["nextWorker" => ST_GAME_NEXT_WORKER, "airdrop" => ST_PLAYER_AIRDROP_SELECT_FIELD, "selectRoom" => ST_PLAYER_SELECT_ROOM, "gameEnd" => ST_BGA_GAME_END]
     ],

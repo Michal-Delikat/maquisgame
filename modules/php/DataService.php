@@ -5,9 +5,9 @@ namespace Bga\Games\MaquisGame;
 class DataService {
     public static function setupRoundData(): string {
         return '
-            INSERT INTO round_data (morale, active_resistance, resistance_in_game, active_milice)
+            INSERT INTO round_data (morale, active_resistance, resistance_in_game, milice_in_game)
             VALUES
-            (6, 3, 5, 3);
+            (6, 3, 5, 5);
         ';
     }
 

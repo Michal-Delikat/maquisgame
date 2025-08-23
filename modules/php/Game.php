@@ -179,7 +179,7 @@ class Game extends \Table {
         if ($spaceID != null) {
             $spaceName = $this->getSpaceNameById($spaceID);
 
-            $placeSoldier = $this->getPatrolsToPlace() - $roundData['active_soldiers'] < $roundData['placed_milice'];
+            $placeSoldier = $this->getPatrolsToPlace() - $roundData['active_soldiers'] < $roundData['placed_milice'] + 1;
 
             if ($placeSoldier) {
                 $this->updateSpace($spaceID, hasSoldier: true);
@@ -318,6 +318,7 @@ class Game extends \Table {
         }
 
         $this->updateRoundData($round, $morale);
+        $this->updatePlacedMilice(0);
 
         if ($morale <= 0 || $roundData['active_resistance'] <= 0 || $round >= 15) {
             $this->gamestate->nextstate("gameEnd");
@@ -344,10 +345,10 @@ class Game extends \Table {
 
     public function actShootMilice(int $spaceID): void {
         $roundData = $this->getRoundData();
-        $placed_milice = $roundData['placed_milice'];
-        $active_milice = $roundData['active_milice'];
-        $active_soldiers = $roundData['active_soldiers'];
-        $weapon = $this->getResource("weapon");
+        $morale = $roundData["morale"];
+        $placedMilice = $roundData['placed_milice'];
+        $miliceInGame = $roundData['milice_in_game'];
+        $activeSoldiers = $roundData['active_soldiers'];
 
         $this->updateSpace($spaceID);
 
@@ -355,12 +356,17 @@ class Game extends \Table {
             "spaceID" => $spaceID
         ));
 
-        $this->updatePlacedMilice($placed_milice - 1);
-        $this->updateActiveMilice($active_milice - 1);
-        $this->updateSoldiers($active_soldiers + 1);
-        $this->updateResourceQuantity("weapon", $weapon - 1);
+        $this->updatePlacedMilice($placedMilice - 1);
+        $this->updateMiliceInGame($miliceInGame - 1);
+        $this->updateSoldiers($activeSoldiers + 1);
+        $this->updateResourceQuantity("weapon", -1);
         $this->setShotToday(true);
-        $this->gamestate->nextState("nextWorker");
+        $this->updateMorale($morale - 1);
+        if ($morale - 1 <= 0) {
+            $this->gamestate->nextState("endGame");
+        } else {
+            $this->gamestate->nextState("nextWorker");
+        }
     }
 
     public function actSelectRoom(int $roomID): void {
@@ -382,6 +388,10 @@ class Game extends \Table {
             $this->arrestWorker($activeSpace);
         }
 
+        $this->gamestate->nextState("nextWorker");
+    }
+
+    public function actBack(): void {
         $this->gamestate->nextState("nextWorker");
     }
 
@@ -673,6 +683,10 @@ class Game extends \Table {
             case "get3Medicine":
                 $this->incrementResourceQuantity("medicine", 3);
                 break;
+            case "increaseMorale":
+                $morale = $this->getMorale();
+                $this->updateMorale($morale + 1);
+                break;
             case "infiltrateFactory":
                 $activeSpace = $this->getActiveSpace();
                 $this->setHasMarker($activeSpace, true);
@@ -715,7 +729,8 @@ class Game extends \Table {
         );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-        $result["roundData"] = $this->getRoundData();
+        $roundData = $this->getRoundData();
+        $result["roundData"] = $roundData;
         $result["board"] = $this->getBoard();
         $result["spacesWithItems"] = $this->getSpacesWithItems();
         $result["discardedPatrolCards"] = $this->patrol_cards->getCardsInLocation('discard');
@@ -724,6 +739,7 @@ class Game extends \Table {
         $result["completedMissions"] = $this->getCompletedMissions();
         $result["rooms"] = $this->getRooms();
         $result["spacesWithRooms"] = $this->getSpacesWithRooms();
+        $result["activeMilice"] = max(0, $this->getPatrolsToPlace() - $roundData["active_soldiers"]);
 
         return $result;
     }
@@ -771,7 +787,7 @@ class Game extends \Table {
 
     protected function getRoundData(): array {
         return (array) $this->getObjectFromDb(
-            "SELECT `round`, `morale`, `active_soldiers`, `active_milice`, `active_resistance`, `resistance_in_game`, `placed_resistance`, `placed_milice`, `placed_soldiers` FROM `round_data`"
+            "SELECT `round`, `morale`, `active_soldiers`, `active_resistance`, `resistance_in_game`, `placed_resistance`, `placed_milice`, `placed_soldiers`, `milice_in_game` FROM `round_data`"
         );
     }
 
@@ -941,6 +957,7 @@ class Game extends \Table {
         $roundData = $this->getRoundData();
 
         $morale_to_patrols_map = array(
+            0 => 5,
             1 => 5,
             2 => 4,
             3 => 4,
@@ -1018,7 +1035,8 @@ class Game extends \Table {
 
     protected function getCanShoot(): bool {
         $weapon = $this->getResource('weapon');
-        return ($weapon > 0 && !$this->getShotToday());
+        $placedMilice = $this->getRoundData()['placed_milice'];
+        return ($weapon > 0 && !$this->getShotToday() && $placedMilice > 0);
     }
 
     protected function getHasMarker(int $spaceID): bool {
@@ -1132,9 +1150,7 @@ class Game extends \Table {
         );
 
         $this->notify->all("placedResistanceUpdated", '', array(
-            "player_id" => $this->getCurrentPlayerId(),
             "placedResistance" => $newNumber,
-            "activeResistance" => $this->getActiveResistance()
         ));
     }
 
@@ -1143,19 +1159,27 @@ class Game extends \Table {
             UPDATE round_data
             SET placed_milice = ' . $newNumber . ';'
         );
+
+        $this->notify->all("placedMiliceUpdated", '', array(
+            "placedMilice" => $newNumber,
+        ));
+    }
+
+    protected function updateMiliceInGame($newNumber) {
+        self::DbQuery('
+            UPDATE round_data
+            SET milice_in_game = ' . $newNumber . ';'
+        );
+
+        $this->notify->all("miliceInGameUpdated", '', array(
+            "miliceInGame" => $newNumber,
+        ));
     }
 
     protected function updatePlacedSoldiers($newNumber) {
         self::DbQuery('
             UPDATE round_data
             SET placed_soldiers = ' . $newNumber . ';'
-        );
-    }
-
-    protected function updateActiveMilice($newNumber) {
-        self::DbQuery('
-            UPDATE round_data
-            SET placed_milice = ' . $newNumber . ';'
         );
     }
 
@@ -1187,11 +1211,11 @@ class Game extends \Table {
         ');
     }
 
-    protected function updateRoundData($round, $morale): void {
-        self::DbQuery('
+    protected function updateRoundData($round, $morale, $placedMilice = 0, $placedSoldiers = 0): void {
+        self::DbQuery("
             UPDATE round_data
-            SET round = ' . $round . ', morale = ' . $morale . ', placed_milice = 0, placed_soldiers = 0;  
-        ');
+            SET round = $round, morale = $morale, placed_milice = $placedMilice, placed_soldiers = $placedSoldiers;  
+        ");
 
         $this->notify->all("roundDataUpdated", clienttranslate("Round $round begins."), array(
             "round" => $round,

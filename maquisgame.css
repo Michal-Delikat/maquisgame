@@ -62,34 +62,61 @@
     align-content: flex-start;
 }
 
+.player-board {
+    background-color: #fefae1;
+}
 
+#custom-player-board {
+    padding: 16px;
+}
 
-/* #maintitlebar_content > * {
-    min-height: 34px;
-} */
+#workers {
+    display: flex;
+    justify-content: space-between;
+}
 
-/* Icons */
-
-.worker-icon {
-    background-size: 50%;
+#resistance-worker-icon, #milice-worker-icon, #soldier-worker-icon {
+    width: 50px;
+    aspect-ratio: 1;
+    background-size: 400%;
     background-image: url('img/Meeples.png');
     background-position-y: center;
-    background-repeat: no-repeat;
     z-index: 1;
-    position: absolute;
 }
 
-.resistance-worker-icon {
-    background-position-x: 30%;
+#milice-worker-icon {
+    background-position-x: 67%;
 }
 
+#soldier-worker-icon {
+    background-position-x: 100%;
+}
+
+#resources {
+    display: flex;
+    width: 200px;
+    flex-wrap: wrap;
+}
+
+.resource-icon {
+    width: 50px;
+    aspect-ratio: 1;
+    background-size: 300%;
+    background-image: url('img/Tokens.png');
+    background-position-y: center;
+    z-index: 1;
+}
+
+.resource-box {
+    text-align: center;
+}
 
 /* Components */
 
 .worker {
     width: 64px;
     aspect-ratio: 1;
-    background-size: 350%;
+    background-size: 400%;
     background-image: url('img/Meeples.png');
     background-position-y: center;
     background-repeat: no-repeat;
@@ -159,13 +186,38 @@
     background-size: 304%;
 }
 
-.food-token {
+.food-token, #food-icon {
     background-position-y: center;
     background-position-x: -50%;
 }
 
-.money-token {
+#medicine-icon {
+    background-position-y: center;
+    background-position-x: center;
+}
+
+.money-token, #money-icon {
+    background-position-y: top;
     background-position-x: -50%; 
+}
+
+.weapon-token, #weapon-icon {
+    background-position-y: top;
+}
+
+#explosives-icon {
+    background-position-x: center;
+    background-position-y: top;
+}
+
+#fakeID-icon {
+    background-position-y: bottom;
+    background-position-x: -50%;
+}
+
+#poison-icon {
+    background-position-y: bottom;
+    background-position-x: center;
 }
 
 #board-and-missions {

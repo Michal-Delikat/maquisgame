@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `round_data` (
     `active_resistance` INT DEFAULT 0,
     `resistance_in_game` INT DEFAULT 0,
     `placed_milice` INT DEFAULT 0,
-    `active_milice` INT DEFAULT 0,
+    `milice_in_game` INT DEFAULT 0,
     `active_soldiers` INT DEFAULT 0,
     `placed_soldiers` INT DEFAULT 0,
     `selected_field` INT DEFAULT 0,
