@@ -62,7 +62,8 @@ class DataService {
             (21, "getFakeId", "Pay 1 money and 2 intel to gain 1 fake id", FALSE),
             (22, "infiltrateFactory", "Infiltrate Factory", TRUE),
             (23, "sabotageFactory", "Sabotage Factory", TRUE),
-            (24, "deliverIntel", "Deliver 2 Intel", TRUE);
+            (24, "deliverIntel", "Deliver 2 Intel", TRUE),
+            (25, "insertMole", "Insert Mole", TRUE);
         ';
     }
 
@@ -173,7 +174,9 @@ class DataService {
             ("Milice Parade Day"),
             ("Officer\'s Mansion"),
             ("Sabotage"),
-            ("Underground newspaper"); 
+            ("Underground newspaper"),
+            ("Infiltration"),
+            ("German Shepards"); 
         ';
     }
 

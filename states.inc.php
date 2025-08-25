@@ -130,6 +130,7 @@ $machinestates = [
         "name" => "airdropSelectSupplies",
         "descriptionmyturn" => clienttranslate('${you} must select wanted resources'),
         "type" => "activeplayer",
+        "args" => "argSelectSupplies",
         "possibleactions" => [
             "actSelectSupplies"
         ],

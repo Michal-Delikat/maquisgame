@@ -102,7 +102,7 @@ class Game extends \Table {
 
         // Missions
 
-        $this->configureMissions(3, 4);
+        $this->configureMissions(5, 6);
 
         // Dummy content.
         $this->setGameStateInitialValue("my_first_global_variable", 0);
@@ -235,6 +235,8 @@ class Game extends \Table {
 
         if ($actionName == "getSpareRoom") {
             $this->gamestate->nextstate("selectRoom");    
+        } else if ($actionName == "insertMole") {
+            $this->gamestate->nextState("nextWorker");
         } else if ($this->checkEscapeRoute()) {
             if ($actionName == "airdrop") {
                 if (!empty($this->getEmptyFields())) {
@@ -299,8 +301,10 @@ class Game extends \Table {
     public function actSelectSupplies(string $supplyType): void {
         $spaceID = $this->getSelectedField();
         $quantity = $supplyType == "food" ? 3 : 1;
-        
-        $this->setItems($spaceID, $supplyType, $quantity);
+
+        if ($this->getAvailableResource($supplyType) > 0) {
+            $this->setItems($spaceID, $supplyType, $quantity);
+        }
 
         $this->returnWorker($this->getActiveSpace());
 
@@ -419,6 +423,27 @@ class Game extends \Table {
         return $this->getEmptyFields();
     }
 
+    public function argSelectSupplies(): array {
+        $options = [
+            [
+                "food",
+                "Airdrop 3 food"
+            ], 
+            [
+                "money",
+                "Airdrop 1 money"
+            ], 
+            [
+                "weapon",
+                "Airdrop 1 weapon"
+            ]
+        ];
+
+        return array_filter($options, function($option) {
+            return $this->getAvailableResource($option[0]);
+        });
+    }
+
     public function argShootMilice(): array {
         return $this->getSpacesWithMilice();
     }
@@ -471,7 +496,7 @@ class Game extends \Table {
     protected function configureMissions(int $missionAID, int $missionBID): void {
         $this->setSelectedMissions($missionAID, $missionBID);
 
-        $missionsWithSpaces = [2, 3, 4];
+        $missionsWithSpaces = [2, 3, 4, 5, 6];
 
         if (in_array($missionAID, $missionsWithSpaces)) {
             $this->addBoardSpace(18, $missionAID);
@@ -503,6 +528,11 @@ class Game extends \Table {
         if (in_array(4, $missionNumbers)) {
             $missionSpace = $missionAID == 4 ? 18 : 21;
             $this->addSpaceAction($missionSpace, "deliverIntel");
+        }
+
+        if (in_array(5, $missionNumbers)) {
+            $missionSpace = $missionAID == 5 ? 18 : 21;
+            $this->addSpaceAction($missionSpace, "insertMole");
         }
     }
 
@@ -628,14 +658,18 @@ class Game extends \Table {
                 $this->incrementResourceQuantity("intel");
                 break;
             case "getMoneyForFood":
-                $this->decrementResourceQuantity("food");
-                $this->incrementResourceQuantity("money");
-                $this->decrementMorale();
+                if ($this->getAvailableResource("money") > 0) {
+                    $this->decrementResourceQuantity("food");
+                    $this->incrementResourceQuantity("money");
+                    $this->decrementMorale();
+                }
                 break;
             case "getMoneyForMedicine":
-                $this->decrementResourceQuantity("medicine");
-                $this->incrementResourceQuantity("money");
-                $this->decrementMorale();
+                if ($this->getAvailableResource("money") > 0) {
+                    $this->decrementResourceQuantity("medicine");
+                    $this->incrementResourceQuantity("money");
+                    $this->decrementMorale();
+                }
                 break;
             case "payForMorale":
                 $this->incrementMorale();
@@ -838,10 +872,10 @@ class Game extends \Table {
                     return $this->getResource("food") > 0 && $this->getResource("medicine") > 0;
                     break;
                 case "getMoneyForFood":
-                    return $this->getResource("food") > 0 && $this->getResource("money") < 4;
+                    return $this->getResource("food") > 0;
                     break;
                 case "getMoneyForMedicine":
-                    return $this->getResource("medicine") > 0 && $this->getResource("money") < 4;
+                    return $this->getResource("medicine") > 0;
                 case "writeGraffiti":
                     return !$this->getHasMarker($spaceID) && !$this->getIsMissionCompleted(2);
                     break;
@@ -882,25 +916,32 @@ class Game extends \Table {
         foreach($result as &$action) {
             switch($action['action_name']) {
                 case "getFood":
-                    if ($this->getResource("food") >= 4) {
+                    if ($this->getAvailableResource("food") <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
                 case "getMedicine":
-                    if ($this->getResource("medicine") >= 4) {
+                    if ($this->getAvailableResource("medicine") <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
                 case "getIntel":
-                    if ($this->getResource("intel") >= 4) {
+                    if ($this->getAvailableResource("intel") <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
                 case "getMoney":
-                    if ($this->getResource("money") >= 4) {
+                    if ($this->getAvailableResource("money") <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
+                case "getMoneyForFood":
+                case "getMoneyForMedicine":
+                    if ($this->getMorale() === 1) {
+                        $action['action_description'] .= " (This will result in loosing the game)";
+                    } else if ($this->getAvailableResource("money") <= 0) {
+                        $action['action_description'] .= " (No effect)";
+                    }
             }
         }
 
@@ -929,13 +970,6 @@ class Game extends \Table {
         return (bool) $this->getUniqueValueFromDb("SELECT action_taken FROM round_data");
     }
 
-    protected function getGameConfiguration(): object {
-        return $this->getObjectFromDb("
-            SELECT mission_a_id, mission_b_id
-            FROM game_configuration;
-        ");
-    }
-
     protected function getBoardPaths(): array {
         $result = (array) $this->getCollectionFromDb("
             SELECT path_id, space_id_start, space_id_end
@@ -955,6 +989,7 @@ class Game extends \Table {
 
     protected function getPatrolsToPlace(): int {
         $roundData = $this->getRoundData();
+        $activeResistance = (int) $roundData['active_resistance'];
 
         $morale_to_patrols_map = array(
             0 => 5,
@@ -967,7 +1002,7 @@ class Game extends \Table {
             7 => 2
         );
 
-        return $morale_to_patrols_map[$roundData['morale']];
+        return max($activeResistance, $morale_to_patrols_map[$roundData['morale']]);
     }
 
     protected function getResource(string $resourceName): int {
@@ -1391,13 +1426,6 @@ class Game extends \Table {
             UPDATE board
             SET is_safe = ' . (int) $isSafe . '
             WHERE space_id = ' . $spaceID . ';'
-        );
-    }
-
-    protected function setGameConfiguration(int $missionAID, int $missionBID): void {
-        self::DbQuery("
-            UPDATE game_configuration
-            SET mission_a_id = " . $missionAID . ", mission_b_id = " . $missionBID . ";"
         );
     }
 

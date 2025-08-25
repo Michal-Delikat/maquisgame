@@ -369,21 +369,7 @@ function (dojo, declare) {
                         break;
 
                     case 'airdropSelectSupplies':
-                        let options = [
-                        [
-                            "food",
-                            "Airdrop 3 food"
-                        ], 
-                        [
-                            "money",
-                            "Airdrop 1 money"
-                        ], 
-                        [
-                            "weapon",
-                            "Airdrop 1 weapon"
-                        ]];
-
-                        options.forEach(option => this.addActionButton('actAirdropSelectSupplies_' + `${option[0]}`, _(`${option[1]}`), () => this.bgaPerformAction("actSelectSupplies", { supplyType: option[0]}), null, null, 'blue'));
+                        Object.values(args).forEach(option => this.addActionButton('actAirdropSelectSupplies_' + `${option[0]}`, _(`${option[1]}`), () => this.bgaPerformAction("actSelectSupplies", { supplyType: option[0]}), null, null, 'blue'));
                         break;
 
                     case 'selectSpareRoom':
@@ -406,7 +392,7 @@ function (dojo, declare) {
             const workerID = workerIDs.length
 
             dojo.place(`<div id="resistance-${workerID}" class="worker resistance"></div>`, `space-${spaceID}-worker-space`);            
-            this.placeOnObject(`resistance-${workerID}`, 'player_boards');
+            this.placeOnObject(`resistance-${workerID}`, 'resistance-worker-icon');
             const animation = this.slideToObject(`resistance-${workerID}`, `space-${spaceID}-worker-space`);
             await this.bgaPlayDojoAnimation(animation);
         },
@@ -442,7 +428,7 @@ function (dojo, declare) {
             let space = dojo.byId(`space-${spaceID}-worker-space`);
             let resistanceID = space.firstElementChild.id;
 
-            const animation = this.slideToObject(`${resistanceID}`, "player_boards");
+            const animation = this.slideToObject(`${resistanceID}`, 'resistance-worker-icon');
             await this.bgaPlayDojoAnimation(animation);
             dojo.destroy(`${resistanceID}`);
         },
@@ -458,14 +444,16 @@ function (dojo, declare) {
 
         placeItems: async function(spaceID, itemType, quantity) {
             for (let i = 0; i < quantity; i++) {
-            // let i = 0;
-                dojo.place(`<div id="space-${spaceID}-${itemType}-token-${i + 1}" class="token ${itemType}-token"></div>`, `space-${spaceID}-token-space-${i + 1}`);
-            // this.placeOnObject(`space-${spaceID}-${itemType}-token-${i + 1}`, 'player_boards');
-            // const animation = this.slideToObject(`space-${spaceID}-${itemType}-token-${i + 1}`, `space-${spaceID}-token-space-${i + 1}`);
-            // await this.bgaPlayDojoAnimation(animation);
+                let tokenID = `${itemType}-token-${i + 1}`;
+                let targetID = `space-${spaceID}-token-space-${i + 1}`;
+                console.log(tokenID, targetID);
+
+                dojo.place(`<div id=${tokenID} class="token ${itemType}-token"></div>`, targetID);
+                // this.placeOnObject(tokenID, 'player_boards');
+                
+                // const animation = this.slideToObject(tokenID, targetID);
+                // await this.bgaPlayDojoAnimation(animation);
             }
-            // const animation = this.slideToObject(`food-token`, `space-${spaceID}`);
-            // await this.bgaPlayDojoAnimation(animation);
         },
 
         removeItems: async function(spaceID) {
@@ -518,11 +506,12 @@ function (dojo, declare) {
             dojo.toggleClass(dojo.byId(`mission-${missionID}`), 'flipped');
         },
 
+        moveRoomTile: async function(spaceID, roomID) {
+
+        },
+
         placeRoomTile: async function(spaceID, roomID) {
             dojo.place(`<div id="room-tile-${roomID}" class="room-tile"></div>`, `space-${spaceID}-room-tile-space`);
-
-            // const animation = this.slideToObject(`room-tile-${roomID}`, `space-${spaceID}-room-tile-space`);
-            // await this.bgaPlayDojoAnimation(animation);
         },
 
         ///////////////////////////////////////////////////

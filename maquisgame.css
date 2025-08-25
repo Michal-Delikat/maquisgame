@@ -137,7 +137,7 @@
 }
 
 .resistance {
-    background-position-x: 30%;
+    background-position-x: 33%;
 }
 
 .milice {
@@ -160,7 +160,7 @@
 
 @media (min-width: 1680px) {
     .card {
-        width: 10vw;
+        width: 8.9vw;
     }
 }
 
@@ -171,6 +171,11 @@
     background-position-y: center;
     background-image: url('img/Markers.png');
     position: absolute;
+    transition: transform 0.5s ease;
+}
+
+.round-number-space:hover > .marker, .morale-track-space:hover > .marker, .soldiers-track-space:hover > .marker {
+    transform: translateY(-30px);
 }
 
 @media (min-width: 1680px) {
@@ -244,11 +249,11 @@
 }
 
 #mission-slot-1 {
-    left: 24%;
+    left: 24.03%;
 }
 
 #mission-slot-2 {
-    left: 24.9%;
+    left: 25.7%;
 }
 
 .mission-card {
@@ -286,31 +291,38 @@
     background-position-x: 33.3%;
 }
 
-#mission-3 > .mission-card-face {
+#mission-3 > .mission-card-face, #mission-4 > .mission-card-face, #mission-5 > .mission-card-face, #mission-6 > .mission-card-face {
     background-image: url('img/Mission_Cards_1star.jpg');
     background-size: 300%;
 }
 
-#mission-3 > .mission-card-back, #mission-4 > .mission-card-back {
+#mission-3 > .mission-card-back, #mission-4 > .mission-card-back, #mission-5 > .mission-card-back, #mission-6 > .mission-card-back {
     background-position-x: 100%;
     background-position-y: bottom;
 }
 
 #mission-3 > .mission-space-1, #mission-4 > .mission-space-1 {
-    left: 8%;
+    left: 7.5%;
 }
 
 #mission-3 > .mission-space-2, #mission-4 > .mission-space-2 {
     left: 36%;
 }
 
-#mission-4 > .mission-card-face {
-    background-image: url('img/Mission_Cards_1star.jpg');
-    background-size: 300%;
+#mission-5 > .mission-space-1 {
+    left: 22%;
 }
 
 #mission-4 > .mission-card-front {
     background-position-x: 50%;
+}
+
+#mission-5 > .mission-card-front {
+    background-position-x: 100%;
+}
+
+#mission-6 > .mission-card-front {
+    background-position-y: bottom;
 }
 
 #left-area > * {
@@ -333,8 +345,8 @@
 
 #morale-track, #soldiers-track {
     position: absolute;
-    left: 7%;
-    width: 86%;
+    left: 7.5%;
+    width: 85.7%;
     aspect-ratio: 2;
     display: flex;
     flex-wrap: wrap;
@@ -343,11 +355,11 @@
 }
 
 #morale-track {
-    top: 17.5%;
+    top: 17%;
 }
 
 #soldiers-track {
-    top: 62.5%;
+    top: 62%;
 }
 
 .morale-track-space, .soldiers-track-space {
@@ -405,7 +417,7 @@
 }
 
 .mission-space {
-    width: 27%;
+    width: 26.7%;
     height: 13.5%;
     top: 50.5%;
     left: 65%
@@ -434,6 +446,7 @@
 
 .token-space {
     position: absolute;
+    z-index: 4;
     width: 50%;
     height: 20%;
     /* border: 1px green solid; */
@@ -445,6 +458,7 @@
     height: 100%;
     top: 0;
     left: 0;
+    z-index: 4;
 }
 
 .background-space {
@@ -453,7 +467,7 @@
     height: 100%;
     top: 0;
     left: 0;
-    z-index: 10;
+    z-index: 5;
 }
 
 .board-space > .background-space {
@@ -466,6 +480,13 @@
     left: 50%;
     width: 50%;
     height: 50%;
+}
+
+.mission-space > .marker-space {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .marker-mission {
