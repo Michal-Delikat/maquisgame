@@ -25,6 +25,11 @@ require_once("DataService.php");
 
 const BOARD = 'BOARD_STATE';
 
+const MISSION_INFILTRATION = 'Infiltration';
+const ACTION_INSERT_MOLE = 'insertMole';
+const ACTION_RECOVER_MOLE = 'recoverMole';
+const ACTION_POISON_SHEPARDS = 'poisonShepards';
+
 class Game extends \Table {
     private array $PATROL_CARD_ITEMS;
     private mixed $patrol_cards;
@@ -119,10 +124,11 @@ class Game extends \Table {
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
 
-        $this->updateResourceQuantity("money", 2);
+        $this->updateResourceQuantity("food", 3);
+        $this->updateResourceQuantity("medicine", 3);
+        $this->updateResourceQuantity("weapon", 1);
+        $this->updateResourceQuantity("intel", 4);
     }
-
-    // STATE ACTIONS
 
     public function actPlaceWorker(int $spaceID): void {
         $roundData = $this->getRoundData();
@@ -235,7 +241,8 @@ class Game extends \Table {
 
         if ($actionName == "getSpareRoom") {
             $this->gamestate->nextstate("selectRoom");    
-        } else if ($actionName == "insertMole") {
+        } else if ($actionName === ACTION_INSERT_MOLE) {
+            $this->saveAction(ACTION_INSERT_MOLE);
             $this->gamestate->nextState("nextWorker");
         } else if ($this->checkEscapeRoute()) {
             if ($actionName == "airdrop") {
@@ -276,7 +283,9 @@ class Game extends \Table {
         $this->resetActiveSpace();
         $this->resetActionTaken();
 
-        if ($roundData['placed_resistance'] > 1) {
+        if ($this->getMoleInserted() && $roundData['placed_resistance'] == 1) {
+            $this->gamestate->nextState("roundEnd");
+        } else if ($roundData['placed_resistance'] > 1) {
             $this->gamestate->nextState("activateWorker");
         } else if ($roundData['placed_resistance'] == 1) {
             $spaceID = $this->getSpacesWithResistanceWorkers()[0];
@@ -324,7 +333,7 @@ class Game extends \Table {
         $this->updateRoundData($round, $morale);
         $this->updatePlacedMilice(0);
 
-        if ($morale <= 0 || $roundData['active_resistance'] <= 0 || $round >= 15) {
+        if ($morale <= 0 || $roundData['active_resistance'] <= 0 || $round >= 15 || ($roundData['active_resistance'] == 1 && $this->getIsMissionSelected(MISSION_INFILTRATION))) {
             $this->gamestate->nextstate("gameEnd");
         } else {
             foreach($board as $space) {
@@ -534,6 +543,11 @@ class Game extends \Table {
             $missionSpace = $missionAID == 5 ? 18 : 21;
             $this->addSpaceAction($missionSpace, "insertMole");
         }
+
+        if (in_array(6, $missionNumbers)) {
+            $missionSpace = $missionAID == 6 ? 18 : 21;
+            $this->addSpaceAction($missionSpace, "poisonShepards");
+        }
     }
 
     protected function addBoardSpace(int $spaceID, int $missionID): void {
@@ -601,7 +615,7 @@ class Game extends \Table {
 
         $this->incrementPlayerScore();
 
-        $this->notify->all("missionCompleted", clienttranslate("Mission completed"), array("missionID" => $missionID));
+        $this->notify->all("missionCompleted", clienttranslate("Mission completed"), array("missionID" => $missionID, "playerScore" => $this->getPlayerScore(), "playerId" => $this->getActivePlayerId()));
     }
 
     protected function addSpareRoomActions(int $spaceID, int $roomID): void {
@@ -732,6 +746,7 @@ class Game extends \Table {
                 }
                 break;
             case "sabotageFactory":
+                $this->updateResourceQuantity("explosives", -2);
                 $this->completeMission(3);
                 break;
             case "deliverIntel":
@@ -743,6 +758,33 @@ class Game extends \Table {
                     $this->setHasMarker($activeSpace, true);
                     $this->addBoardSpace($activeSpace + 1, 4);
                     $this->addSpaceAction($activeSpace + 1, "deliverIntel");
+                }
+                break;
+            case ACTION_INSERT_MOLE:
+                $activeSpace = $this->getActiveSpace();
+                $this->setMoleInserted(true);
+                $this->updateResourceQuantity("intel", -2);
+                $this->addBoardSpace($activeSpace + 1, 5);
+                $this->addSpaceAction($activeSpace + 1, ACTION_RECOVER_MOLE);
+                break;
+            case ACTION_RECOVER_MOLE:
+                $activeSpace = $this->getActiveSpace();
+                $this->updateResourceQuantity("weapon", -1);
+                $this->updateResourceQuantity("explosives", -1);
+                $this->setMoleInserted(false);
+                $this->returnWorker($activeSpace - 1);
+                $this->completeMission(5);
+                break;
+            case ACTION_POISON_SHEPARDS:
+                $activeSpace = $this->getActiveSpace();
+                $this->updateResourceQuantity("food", -1);
+                $this->updateResourceQuantity("medicine", -1);
+                if ($activeSpace == 20 || $activeSpace == 23) {
+                    $this->completeMission(6);
+                } else {
+                    $this->setHasMarker($activeSpace, true);
+                    $this->addBoardSpace($activeSpace + 1, 6);
+                    $this->addSpaceAction($activeSpace + 1, "poisonShepards");
                 }
                 break;
         }
@@ -826,9 +868,15 @@ class Game extends \Table {
     }
 
     protected function getSpacesWithResistanceWorkers(): array {
-        $result = $this->getCollectionFromDb("
-            SELECT `space_id` FROM `board` WHERE `has_worker` = TRUE ");
-        return array_keys($result);
+        $result = array_keys($this->getCollectionFromDb("SELECT `space_id` FROM `board` WHERE `has_worker` = TRUE"));
+        if ($this->getIsMissionSelected(MISSION_INFILTRATION) && $this->getMoleInserted()) {
+            $spaceIdWithMole = $this->getSpaceIdsByMissionName(MISSION_INFILTRATION)[0];
+
+            $result = array_filter($result, function($spaceId) use ($spaceIdWithMole) {
+                return $spaceId != $spaceIdWithMole;
+            });
+        }
+        return $result;
     }
 
     protected function getSpacesWithMilice(): array {
@@ -905,6 +953,9 @@ class Game extends \Table {
                     return $this->getResource("explosives") >= 1;
                     break;
                 case "deliverIntel":
+                    return $this->getResource("intel") >= 2;
+                    break;
+                case ACTION_INSERT_MOLE:
                     return $this->getResource("intel") >= 2;
                     break;
                 default:
@@ -1068,10 +1119,14 @@ class Game extends \Table {
         return (bool) $this->getUniqueValueFromDb("SELECT shot_today FROM round_data");
     }
 
+    protected function getMoleInserted(): bool {
+        return (bool) $this->getUniqueValueFromDb("SELECT mole_inserted FROM round_data");
+    }
+
     protected function getCanShoot(): bool {
         $weapon = $this->getResource('weapon');
         $placedMilice = $this->getRoundData()['placed_milice'];
-        return ($weapon > 0 && !$this->getShotToday() && $placedMilice > 0);
+        return ($weapon > 0 && !$this->getShotToday() && $placedMilice > 0) && !($this->getIsMissionSelected("German Shepards") && !$this->getIsMissionCompleted(6));
     }
 
     protected function getHasMarker(int $spaceID): bool {
@@ -1094,6 +1149,17 @@ class Game extends \Table {
         ");
     }
 
+    protected function getSpaceIdsByMissionName(string $missionName): array {
+        $result = (array) $this->getCollectionFromDB("
+            SELECT b.space_id
+            FROM board AS b
+            JOIN mission AS m ON b.mission_id = m.mission_id
+            WHERE m.mission_name = '$missionName';
+        ");
+
+        return array_keys($result);
+    }
+
     protected function setSelectedMissions(int $missionAID, int $missionBID): void {
         self::DbQuery("
             UPDATE mission
@@ -1107,6 +1173,14 @@ class Game extends \Table {
             SELECT mission_id
             FROM mission
             WHERE selected = TRUE;
+        ");
+    }
+
+    protected function getIsMissionSelected(string $missionName): bool {
+        return (bool) $this->getUniqueValueFromDb("
+            SELECT selected
+            FROM mission
+            WHERE mission_name = '$missionName';
         ");
     }
 
@@ -1373,6 +1447,11 @@ class Game extends \Table {
             UPDATE round_data
             SET shot_today = " . (int) $shotToday . ";"
         );
+    }
+
+    protected function setMoleInserted(bool $moleInserted = false): void {
+        $this->debug("moleInserted: $moleInserted");
+        self::DbQuery("UPDATE round_data SET mole_inserted = " . (int) $moleInserted . ";");
     }
 
     protected function setHasMarker(int $spaceID, bool $hasMarker): void {

@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS `round_data` (
     `active_soldiers` INT DEFAULT 0,
     `placed_soldiers` INT DEFAULT 0,
     `selected_field` INT DEFAULT 0,
-    `shot_today` INT DEFAULT 0
+    `shot_today` BOOLEAN DEFAULT FALSE,
+    `mole_inserted` BOOLEAN DEFAULT FALSE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `board` (

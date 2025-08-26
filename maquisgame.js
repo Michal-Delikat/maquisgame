@@ -161,17 +161,15 @@ function (dojo, declare) {
                         <div id="round-number-spaces"></div>
                     </div>
                 </div>
-                <div>
+                <div id="cards">
                     <div id="morale-and-soldiers-track" class="card">
                         <div id="morale-track"></div>
                         <div id="soldiers-track"></div>
                     </div>
-                    <div id="room-tiles"></div>
-                </div>
-                <div id="patrol-cards">
                     <div id="patrol-deck" class="card"></div>
                     <div id="patrol-discard" class="card"></div>
                 </div>
+                <div id="room-tiles"></div>
             `, 'game_play_area');
 
             // FLIP MISSIONS 
@@ -226,7 +224,7 @@ function (dojo, declare) {
                 }
             }
 
-            for (let i = 1; i <= 19; i++) {
+            for (let i = 1; i <= 23; i++) {
                 if (board[i]) {
                     if (parseInt(board[i].has_worker)) {
                         this.placeWorker(i);
@@ -650,12 +648,8 @@ function (dojo, declare) {
             this.removeMarker(spaceID);
         },
 
-        notif_missionCompleted: function({missionID}) {
-            // const missionIDs = dojo.query('.mission-card').map(node => node.id);
-            // console.log(missionIDs);
-
-            // dojo.toggleClass(dojo.byId('mission-card-back'), 'flipped');
-            
+        notif_missionCompleted: function({missionID, playerScore, playerId}) {
+            dojo.byId("player_score_" + playerId).innerHTML = playerScore;
 
             this.flipMission(missionID);
         },

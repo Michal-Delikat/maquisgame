@@ -111,8 +111,6 @@
     text-align: center;
 }
 
-/* Components */
-
 .worker {
     width: 64px;
     aspect-ratio: 1;
@@ -227,9 +225,7 @@
 
 #board-and-missions {
     width: 688px;
-    margin: 32px;
 }
-
 
 @media (min-width: 1680px) {
     #board-and-missions {
@@ -254,9 +250,6 @@
 
 #mission-slot-2 {
     left: 25.7%;
-}
-
-.mission-card {
 }
 
 .mission-card-front, .mission-card-back {
@@ -301,16 +294,28 @@
     background-position-y: bottom;
 }
 
-#mission-3 > .mission-space-1, #mission-4 > .mission-space-1 {
+#mission-3 > .mission-space-1, #mission-4 > .mission-space-1, #mission-6 > .mission-space-1 {
     left: 7.5%;
 }
 
-#mission-3 > .mission-space-2, #mission-4 > .mission-space-2 {
+#mission-3 > .mission-space-2, #mission-4 > .mission-space-2, #mission-6 > .mission-space-2 {
     left: 36%;
 }
 
 #mission-5 > .mission-space-1 {
     left: 22%;
+}
+
+#mission-5 > .mission-space-2 {
+    left: 51%;
+}
+
+#mission-5 > .mission-space-3 {
+    display: none;
+}
+
+#mission-6 > .mission-space {
+    top: 12.5%;
 }
 
 #mission-4 > .mission-card-front {
@@ -329,6 +334,14 @@
     padding: 5%;
     display: flex;
     justify-content: space-evenly;
+}
+
+#cards {
+    padding: 0 32px;
+}
+
+#cards > * {
+    margin-bottom: 16px;
 }
 
 #help-card {
@@ -537,7 +550,7 @@
 }
 
 #help-card, #morale-and-soldiers-track, #patrol-discard, #patrol-deck {
-    margin: 34px;
+    /* margin: 34px; */
 }
 
 .round-number-space {
@@ -551,12 +564,7 @@
 
 #marker-round {
     background-position-x: 35.5%;
-}
-
-@media (min-width: 1680px) {
-    #marker-round {
-        width: 1.3vw;
-    }
+    width: 100%;
 }
 
 .patrol-card {
@@ -699,7 +707,7 @@
 
 #room-tiles {
     position: relative;
-    width: 216px;
+    width: 318px;
     height: fit-content;
     display: flex;
     flex-wrap: wrap;
@@ -715,7 +723,7 @@
 
 @media (min-width: 1680px) {
     #room-tiles {
-        width: 13.3vw;
+        width: 20vw;
     }
 
     .room-tile {

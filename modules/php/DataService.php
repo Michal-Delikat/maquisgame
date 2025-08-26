@@ -63,7 +63,9 @@ class DataService {
             (22, "infiltrateFactory", "Infiltrate Factory", TRUE),
             (23, "sabotageFactory", "Sabotage Factory", TRUE),
             (24, "deliverIntel", "Deliver 2 Intel", TRUE),
-            (25, "insertMole", "Insert Mole", TRUE);
+            (25, "insertMole", "Insert Mole", TRUE),
+            (26, "recoverMole", "Recover mole and complete mission", TRUE),
+            (27, "poisonShepards", "Poison Shepards", TRUE);
         ';
     }
 
