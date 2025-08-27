@@ -187,6 +187,7 @@
     height: 60px;
     background-image: url('img/Tokens.png');
     background-size: 304%;
+    position: absolute;
 }
 
 .food-token, #food-icon {
@@ -225,6 +226,7 @@
 
 #board-and-missions {
     width: 688px;
+    margin: 0 32px 32px 0;
 }
 
 @media (min-width: 1680px) {
@@ -337,7 +339,7 @@
 }
 
 #cards {
-    padding: 0 32px;
+    padding-right: 32px;
 }
 
 #cards > * {

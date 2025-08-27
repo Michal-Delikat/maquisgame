@@ -393,6 +393,12 @@ function (dojo, declare) {
             this.placeOnObject(`resistance-${workerID}`, 'resistance-worker-icon');
             const animation = this.slideToObject(`resistance-${workerID}`, `space-${spaceID}-worker-space`);
             await this.bgaPlayDojoAnimation(animation);
+
+            let dialog = new ebg.popindialog();
+            dialog.create('myModalDialog');
+            dialog.setTitle(_("Modal Title"));
+            dialog.setContent(_("This is the modal content."));
+            dialog.show()
         },
         
         placeMilice: async function(spaceID) {
@@ -444,13 +450,12 @@ function (dojo, declare) {
             for (let i = 0; i < quantity; i++) {
                 let tokenID = `${itemType}-token-${i + 1}`;
                 let targetID = `space-${spaceID}-token-space-${i + 1}`;
-                console.log(tokenID, targetID);
 
                 dojo.place(`<div id=${tokenID} class="token ${itemType}-token"></div>`, targetID);
-                // this.placeOnObject(tokenID, 'player_boards');
+                this.placeOnObject(tokenID, `${itemType}-icon`);
                 
-                // const animation = this.slideToObject(tokenID, targetID);
-                // await this.bgaPlayDojoAnimation(animation);
+                const animation = this.slideToObject(tokenID, targetID);
+                await this.bgaPlayDojoAnimation(animation);
             }
         },
 
@@ -459,8 +464,9 @@ function (dojo, declare) {
                 let space = dojo.byId(`space-${spaceID}-token-space-${i}`);
                 if (space.firstElementChild) {
                     let itemTokenID = space.firstElementChild.id;
-                    // const animation = this.slideToObject(`${itemTokenID}`, "player_boards");
-                    // await this.bgaPlayDojoAnimation(animation);
+                    let itemType = itemTokenID.split("-")[0];
+                    const animation = this.slideToObject(`${itemTokenID}`, "player_boards");
+                    await this.bgaPlayDojoAnimation(animation);
                     dojo.destroy(`${itemTokenID}`);
                 }
             }

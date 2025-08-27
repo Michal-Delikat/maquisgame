@@ -26,9 +26,53 @@ require_once("DataService.php");
 const BOARD = 'BOARD_STATE';
 
 const MISSION_INFILTRATION = 'Infiltration';
+
 const ACTION_INSERT_MOLE = 'insertMole';
 const ACTION_RECOVER_MOLE = 'recoverMole';
 const ACTION_POISON_SHEPARDS = 'poisonShepards';
+const ACTION_GET_SPARE_ROOM = 'getSpareRoom';
+const ACTION_GET_WEAPON = 'getWeapon';
+const ACTION_GET_FOOD = 'getFood';
+const ACTION_GET_MEDICINE = 'getMedicine';
+const ACTION_GET_INTEL = 'getIntel';
+const ACTION_GET_MONEY_FOR_FOOD = 'getMoneyForFood';
+const ACTION_GET_MONEY_FOR_MEDICINE = 'getMoneyForMedicine';
+const ACTION_PAY_FOR_MORALE = 'payForMorale';
+const ACTION_GET_WORKER = 'getWorker';
+const ACTION_COLLECT_ITEMS = 'collectItems';
+const ACTION_WRITE_GRAFFITI = 'writeGraffiti';
+const ACTION_COMPLETE_OFFICERS_MANSION_MISSION = 'completeOfficersMansionMission';
+const ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION = 'completeMilicieParadeDayMission';
+const ACTION_GET_MONEY = 'getMoney';
+const ACTION_GET_EXPLOSIVES = 'getExplosives';
+const ACTION_GET_3_FOOD = 'get3Food';
+const ACTION_GET_3_MEDICINE = 'get3Medicine';
+const ACTION_INCREASE_MORALE = 'increaseMorale';
+const ACTION_INFILTRATE_FACTORY = 'infiltrateFactory';
+const ACTION_SABOTAGE_FACTORY = 'sabotageFactory';
+const ACTION_DELIVER_INTEL = 'deliverIntel';
+const ACTION_AIRDROP = 'airdrop';
+const ACTION_GET_FAKE_ID = 'getFakeId';
+const ACTION_GET_POISON = 'getPoison';
+
+const RESOURCE_FOOD = 'food';
+const RESOURCE_MEDICINE = 'medicine';
+const RESOURCE_WEAPON = 'weapon';
+const RESOURCE_INTEL = 'intel';
+const RESOURCE_MONEY = 'money';
+const RESOURCE_EXPLOSIVES = 'explosives';
+const RESOURCE_POISON = 'poison';
+const RESOURCE_FAKE_ID = 'fake_id';
+
+const ROOM_INFORMANT = 'Informant';
+const ROOM_COUNTERFEITER = 'Counterfeiter';
+const ROOM_SAFE_HOUSE = 'Safe House';
+const ROOM_CHEMISTS_LAB = "Chemist's Lab";
+const ROOM_SMUGGLER = 'Smuggler';
+const ROOM_PROPAGANDIST = 'Propagandist';
+const ROOM_FIXER = 'Fixer';
+const ROOM_PHARMACIST = 'Pharmacist';
+const ROOM_FORGER = 'Forger';
 
 class Game extends \Table {
     private array $PATROL_CARD_ITEMS;
@@ -124,10 +168,10 @@ class Game extends \Table {
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
 
-        $this->updateResourceQuantity("food", 3);
-        $this->updateResourceQuantity("medicine", 3);
-        $this->updateResourceQuantity("weapon", 1);
-        $this->updateResourceQuantity("intel", 4);
+        $this->updateResourceQuantity(RESOURCE_FOOD, 3);
+        $this->updateResourceQuantity(RESOURCE_MEDICINE, 3);
+        $this->updateResourceQuantity(RESOURCE_WEAPON, 1);
+        $this->updateResourceQuantity(RESOURCE_INTEL, 4);
     }
 
     public function actPlaceWorker(int $spaceID): void {
@@ -239,13 +283,13 @@ class Game extends \Table {
         $this->notify->all("actionTaken", clienttranslate("Action selected: " . $actionName), array());
         $activeSpace = $this->getActiveSpace();
 
-        if ($actionName == "getSpareRoom") {
+        if ($actionName == ACTION_GET_SPARE_ROOM) {
             $this->gamestate->nextstate("selectRoom");    
         } else if ($actionName === ACTION_INSERT_MOLE) {
             $this->saveAction(ACTION_INSERT_MOLE);
             $this->gamestate->nextState("nextWorker");
         } else if ($this->checkEscapeRoute()) {
-            if ($actionName == "airdrop") {
+            if ($actionName == ACTION_AIRDROP) {
                 if (!empty($this->getEmptyFields())) {
                     $this->gamestate->nextstate("airdrop");
                 } else {
@@ -309,7 +353,7 @@ class Game extends \Table {
 
     public function actSelectSupplies(string $supplyType): void {
         $spaceID = $this->getSelectedField();
-        $quantity = $supplyType == "food" ? 3 : 1;
+        $quantity = $supplyType == RESOURCE_FOOD ? 3 : 1;
 
         if ($this->getAvailableResource($supplyType) > 0) {
             $this->setItems($spaceID, $supplyType, $quantity);
@@ -372,7 +416,7 @@ class Game extends \Table {
         $this->updatePlacedMilice($placedMilice - 1);
         $this->updateMiliceInGame($miliceInGame - 1);
         $this->updateSoldiers($activeSoldiers + 1);
-        $this->updateResourceQuantity("weapon", -1);
+        $this->updateResourceQuantity(RESOURCE_WEAPON, -1);
         $this->setShotToday(true);
         $this->updateMorale($morale - 1);
         if ($morale - 1 <= 0) {
@@ -388,7 +432,7 @@ class Game extends \Table {
         $this->setIsRoomAvailable($roomID, false); 
         $this->setRoomID($activeSpace, $roomID);
         $this->addSpareRoomActions($activeSpace, $roomID);
-        $this->decrementResourceQuantity("money", 2);
+        $this->decrementResourceQuantity(RESOURCE_MONEY, 2);
 
         $this->notify->all("roomPlaced", clienttranslate("Room placed."), array(
             "roomID" => $roomID,
@@ -435,15 +479,15 @@ class Game extends \Table {
     public function argSelectSupplies(): array {
         $options = [
             [
-                "food",
+                RESOURCE_FOOD,
                 "Airdrop 3 food"
             ], 
             [
-                "money",
+                RESOURCE_MONEY,
                 "Airdrop 1 money"
             ], 
             [
-                "weapon",
+                RESOURCE_WEAPON,
                 "Airdrop 1 weapon"
             ]
         ];
@@ -518,35 +562,35 @@ class Game extends \Table {
         $missionNumbers = [$missionAID, $missionBID];
 
         if (in_array(1, $missionNumbers)) {
-            $this->addSpaceAction(1, "completeMiliceParadeDayMission");
+            $this->addSpaceAction(1, ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION);
         }
         
         if (in_array(2, $missionNumbers)) {
             $missionSpace = $missionAID == 2 ? 18 : 21;
-            $this->addSpaceAction(1, "writeGraffiti");
-            $this->addSpaceAction(3, "writeGraffiti");
-            $this->addSpaceAction(11, "writeGraffiti");
-            $this->addSpaceAction($missionSpace, "completeOfficersMansionMission");
+            $this->addSpaceAction(1, ACTION_WRITE_GRAFFITI);
+            $this->addSpaceAction(3, ACTION_WRITE_GRAFFITI);
+            $this->addSpaceAction(11, ACTION_WRITE_GRAFFITI);
+            $this->addSpaceAction($missionSpace, ACTION_COMPLETE_OFFICERS_MANSION_MISSION);
         }
 
         if (in_array(3, $missionNumbers)) {
             $missionSpace = $missionAID == 3 ? 18 : 21;
-            $this->addSpaceAction($missionSpace, "infiltrateFactory");
+            $this->addSpaceAction($missionSpace, ACTION_INFILTRATE_FACTORY);
         }
 
         if (in_array(4, $missionNumbers)) {
             $missionSpace = $missionAID == 4 ? 18 : 21;
-            $this->addSpaceAction($missionSpace, "deliverIntel");
+            $this->addSpaceAction($missionSpace, ACTION_DELIVER_INTEL);
         }
 
         if (in_array(5, $missionNumbers)) {
             $missionSpace = $missionAID == 5 ? 18 : 21;
-            $this->addSpaceAction($missionSpace, "insertMole");
+            $this->addSpaceAction($missionSpace, ACTION_INSERT_MOLE);
         }
 
         if (in_array(6, $missionNumbers)) {
             $missionSpace = $missionAID == 6 ? 18 : 21;
-            $this->addSpaceAction($missionSpace, "poisonShepards");
+            $this->addSpaceAction($missionSpace, ACTION_POISON_SHEPARDS);
         }
     }
 
@@ -622,34 +666,33 @@ class Game extends \Table {
         $rooms = $this->getRooms();
 
         switch ($rooms[$roomID]["room_name"]) {
-            case "Informant":
-                $this->addSpaceAction($spaceID, "getIntel");
+            case ROOM_INFORMANT:
+                $this->addSpaceAction($spaceID, ACTION_GET_INTEL);
                 break;
-            case "Counterfeiter":
-                $this->addSpaceAction($spaceID, "getMoney");
+            case ROOM_COUNTERFEITER:
+                $this->addSpaceAction($spaceID, ACTION_GET_MONEY);
                 break;
-            case "Safe House":
+            case ROOM_SAFE_HOUSE:
                 $this->updateFieldsSafety($spaceID, isSafe: true);
                 break;
-            case 'Chemist\'s Lab':
-                $this->debug("Hello!");
-                $this->addSpaceAction($spaceID, "getExplosives");
+            case ROOM_CHEMISTS_LAB:
+                $this->addSpaceAction($spaceID, ACTION_GET_EXPLOSIVES);
                 break;
-            case "Smuggler":
-                $this->addSpaceAction($spaceID, "get3Food");
-                $this->addSpaceAction($spaceID, "get3Medicine");
+            case ROOM_SMUGGLER:
+                $this->addSpaceAction($spaceID, ACTION_GET_3_FOOD);
+                $this->addSpaceAction($spaceID, ACTION_GET_3_MEDICINE);
                 break;
-            case "Propagandist":
-                $this->addSpaceAction($spaceID, "increaseMorale");
+            case ROOM_PROPAGANDIST:
+                $this->addSpaceAction($spaceID, ACTION_INCREASE_MORALE);
                 break;
-            case "Fixer":
+            case ROOM_FIXER:
 
                 break;
-            case "Pharmacist":
-                $this->addSpaceAction($spaceID, "getPoison");
+            case ROOM_PHARMACIST:
+                $this->addSpaceAction($spaceID, ACTION_GET_POISON);
                 break;
-            case "Forger":
-                $this->addSpaceAction($spaceID, "getFakeId");
+            case ROOM_FORGER:
+                $this->addSpaceAction($spaceID, ACTION_GET_FAKE_ID);
                 break;
         }
     } 
@@ -658,43 +701,43 @@ class Game extends \Table {
 
     protected function saveAction(string $actionName): void {
         switch($actionName) {
-            case "getWeapon":
-                $this->decrementResourceQuantity("money");
-                $this->incrementResourceQuantity("weapon");
+            case ACTION_GET_WEAPON:
+                $this->decrementResourceQuantity(RESOURCE_MONEY);
+                $this->incrementResourceQuantity(RESOURCE_WEAPON);
                 break;
-            case "getFood":
-                $this->incrementResourceQuantity("food");
+            case ACTION_GET_FOOD:
+                $this->incrementResourceQuantity(RESOURCE_FOOD);
                 break;
-            case "getMedicine":
-                $this->incrementResourceQuantity("medicine");
+            case ACTION_GET_MEDICINE:
+                $this->incrementResourceQuantity(RESOURCE_MEDICINE);
                 break;
-            case "getIntel":
-                $this->incrementResourceQuantity("intel");
+            case ACTION_GET_INTEL:
+                $this->incrementResourceQuantity(RESOURCE_INTEL);
                 break;
-            case "getMoneyForFood":
-                if ($this->getAvailableResource("money") > 0) {
-                    $this->decrementResourceQuantity("food");
-                    $this->incrementResourceQuantity("money");
+            case ACTION_GET_MONEY_FOR_FOOD:
+                if ($this->getAvailableResource(RESOURCE_MONEY) > 0) {
+                    $this->decrementResourceQuantity(RESOURCE_FOOD);
+                    $this->incrementResourceQuantity(RESOURCE_MONEY);
                     $this->decrementMorale();
                 }
                 break;
-            case "getMoneyForMedicine":
-                if ($this->getAvailableResource("money") > 0) {
-                    $this->decrementResourceQuantity("medicine");
-                    $this->incrementResourceQuantity("money");
+            case ACTION_GET_MONEY_FOR_MEDICINE:
+                if ($this->getAvailableResource(RESOURCE_MONEY) > 0) {
+                    $this->decrementResourceQuantity(RESOURCE_MEDICINE);
+                    $this->incrementResourceQuantity(RESOURCE_MONEY);
                     $this->decrementMorale();
                 }
                 break;
-            case "payForMorale":
+            case ACTION_PAY_FOR_MORALE:
                 $this->incrementMorale();
-                $this->decrementResourceQuantity("medicine");
-                $this->decrementResourceQuantity("food");
+                $this->decrementResourceQuantity(RESOURCE_MEDICINE);
+                $this->decrementResourceQuantity(RESOURCE_FOOD);
                 break;
-            case "getWorker":
-                $this->decrementResourceQuantity("food");
+            case ACTION_GET_WORKER:
+                $this->decrementResourceQuantity(RESOURCE_FOOD);
                 $this->updateActiveResistance($this->getRoundData()['active_resistance'] + 1);
                 break;
-            case "collectItems":
+            case ACTION_COLLECT_ITEMS:
                 $activeSpace = $this->getActiveSpace();
                 $spacesWithItems = $this->getSpacesWithItems();
                 $itemType = $spacesWithItems[$activeSpace]['item'];
@@ -703,39 +746,39 @@ class Game extends \Table {
                 $this->updateResourceQuantityFromCollectingAirdrop($itemType, (int) $quantity);
                 $this->setItems($activeSpace);
                 break;
-            case "writeGraffiti":
+            case ACTION_WRITE_GRAFFITI:
                 $this->setHasMarker($this->getActiveSpace(), true);
                 break;
-            case "completeOfficersMansionMission":
+            case ACTION_COMPLETE_OFFICERS_MANSION_MISSION:
                 $this->completeMission(2);
                 $this->setHasMarker(1, false);
                 $this->setHasMarker(3, false);
                 $this->setHasMarker(11, false);
                 break;
-            case "completeMiliceParadeDayMission":
+            case ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION:
                 $this->completeMission(1);
-                $this->decrementResourceQuantity("weapon");
+                $this->decrementResourceQuantity(RESOURCE_WEAPON);
                 $this->incrementMorale($this->getMorale());
                 $this->arrestWorker(1);
                 break;
-            case "getMoney":
-                $this->incrementResourceQuantity("money");
+            case ACTION_GET_MONEY:
+                $this->incrementResourceQuantity(RESOURCE_MONEY);
                 break;
-            case "getExplosives":
-                $this->decrementResourceQuantity("medicine");
-                $this->incrementResourceQuantity("explosives");
+            case ACTION_GET_EXPLOSIVES:
+                $this->decrementResourceQuantity(RESOURCE_MEDICINE);
+                $this->incrementResourceQuantity(RESOURCE_EXPLOSIVES);
                 break;
-            case "get3Food":
-                $this->incrementResourceQuantity("food", 3);
+            case ACTION_GET_3_FOOD:
+                $this->incrementResourceQuantity(RESOURCE_FOOD, 3);
                 break;
-            case "get3Medicine":
-                $this->incrementResourceQuantity("medicine", 3);
+            case ACTION_GET_3_MEDICINE:
+                $this->incrementResourceQuantity(RESOURCE_MEDICINE, 3);
                 break;
-            case "increaseMorale":
+            case ACTION_INCREASE_MORALE:
                 $morale = $this->getMorale();
                 $this->updateMorale($morale + 1);
                 break;
-            case "infiltrateFactory":
+            case ACTION_INFILTRATE_FACTORY:
                 $activeSpace = $this->getActiveSpace();
                 $this->setHasMarker($activeSpace, true);
                 $this->addBoardSpace($activeSpace + 1, 3);
@@ -745,13 +788,13 @@ class Game extends \Table {
                     $this->addSpaceAction($activeSpace + 1, "infiltrateFactory");
                 }
                 break;
-            case "sabotageFactory":
-                $this->updateResourceQuantity("explosives", -2);
+            case ACTION_SABOTAGE_FACTORY:
+                $this->updateResourceQuantity(RESOURCE_EXPLOSIVES, -2);
                 $this->completeMission(3);
                 break;
-            case "deliverIntel":
+            case ACTION_DELIVER_INTEL:
                 $activeSpace = $this->getActiveSpace();
-                $this->updateResourceQuantity("intel", -2);
+                $this->updateResourceQuantity(RESOURCE_INTEL, -2);
                 if ($activeSpace == 20 || $activeSpace == 23) {
                     $this->completeMission(4);
                 } else {
@@ -763,22 +806,22 @@ class Game extends \Table {
             case ACTION_INSERT_MOLE:
                 $activeSpace = $this->getActiveSpace();
                 $this->setMoleInserted(true);
-                $this->updateResourceQuantity("intel", -2);
+                $this->updateResourceQuantity(RESOURCE_INTEL, -2);
                 $this->addBoardSpace($activeSpace + 1, 5);
                 $this->addSpaceAction($activeSpace + 1, ACTION_RECOVER_MOLE);
                 break;
             case ACTION_RECOVER_MOLE:
                 $activeSpace = $this->getActiveSpace();
-                $this->updateResourceQuantity("weapon", -1);
-                $this->updateResourceQuantity("explosives", -1);
+                $this->updateResourceQuantity(RESOURCE_WEAPON, -1);
+                $this->updateResourceQuantity(RESOURCE_EXPLOSIVES, -1);
                 $this->setMoleInserted(false);
                 $this->returnWorker($activeSpace - 1);
                 $this->completeMission(5);
                 break;
             case ACTION_POISON_SHEPARDS:
                 $activeSpace = $this->getActiveSpace();
-                $this->updateResourceQuantity("food", -1);
-                $this->updateResourceQuantity("medicine", -1);
+                $this->updateResourceQuantity(RESOURCE_FOOD, -1);
+                $this->updateResourceQuantity(RESOURCE_MEDICINE, -1);
                 if ($activeSpace == 20 || $activeSpace == 23) {
                     $this->completeMission(6);
                 } else {
@@ -910,53 +953,53 @@ class Game extends \Table {
 
         $result = array_filter($result, function($action) use ($spaceID) {
             switch ($action['action_name']) {
-                case "getWeapon":
-                    return $this->getResource("money") > 0;
+                case ACTION_GET_WEAPON:
+                    return $this->getResource(RESOURCE_MONEY) > 0;
                     break;
-                case "airdrop":
+                case ACTION_AIRDROP:
                     return count($this->getEmptyFields()) > 0;
                     break;
-                case "payForMorale":
-                    return $this->getResource("food") > 0 && $this->getResource("medicine") > 0;
+                case ACTION_PAY_FOR_MORALE:
+                    return $this->getResource(RESOURCE_FOOD) > 0 && $this->getResource(RESOURCE_MEDICINE) > 0;
                     break;
-                case "getMoneyForFood":
-                    return $this->getResource("food") > 0;
+                case ACTION_GET_MONEY_FOR_FOOD:
+                    return $this->getResource(RESOURCE_FOOD) > 0;
                     break;
-                case "getMoneyForMedicine":
-                    return $this->getResource("medicine") > 0;
-                case "writeGraffiti":
+                case ACTION_GET_MONEY_FOR_MEDICINE:
+                    return $this->getResource(RESOURCE_MEDICINE) > 0;
+                case ACTION_WRITE_GRAFFITI:
                     return !$this->getHasMarker($spaceID) && !$this->getIsMissionCompleted(2);
                     break;
-                case "completeOfficersMansionMission":
+                case ACTION_COMPLETE_OFFICERS_MANSION_MISSION:
                     return $this->getHasMarker(1) && $this->getHasMarker(3) && $this->getHasMarker(11) && !$this->getIsMissionCompleted(2);
                     break;
-                case "completeMiliceParadeDayMission":
+                case ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION:
                     $day = (int) $this->getRoundData()["round"];
-                    return $this->getResource("weapon") > 0 && ($day == 14 || $day % 3 == 0);
+                    return $this->getResource(RESOURCE_WEAPON) > 0 && ($day == 14 || $day % 3 == 0);
                     break;
-                case "getWorker":
-                    return $this->getResource("food") > 0 && $this->getActiveResistance() < $this->getResistanceInGame();
+                case ACTION_GET_WORKER:
+                    return $this->getResource(RESOURCE_FOOD) > 0 && $this->getActiveResistance() < $this->getResistanceInGame();
                     break;
-                case "getSpareRoom":
-                    return !$this->getIsRoomPlaced($spaceID) && $this->getResource("money") >= 2;
+                case ACTION_GET_SPARE_ROOM:
+                    return !$this->getIsRoomPlaced($spaceID) && $this->getResource(RESOURCE_MONEY) >= 2;
                     break;
-                case "getExplosives":
-                    return $this->getResource("medicine") >= 1;
+                case ACTION_GET_EXPLOSIVES:
+                    return $this->getResource(RESOURCE_MEDICINE) >= 1;
                     break;
-                case "getPoison":
-                    return $this->getResource("medicine") >= 2;
+                case ACTION_GET_POISON:
+                    return $this->getResource(RESOURCE_MEDICINE) >= 2;
                     break;
-                case "getFakeId":
-                    return $this->getResource("money") >= 2 && $this->getResource("intel") >= 1;
+                case ACTION_GET_FAKE_ID:
+                    return $this->getResource(RESOURCE_MONEY) >= 2 && $this->getResource(RESOURCE_INTEL) >= 1;
                     break;
-                case "sabotageFactory":
-                    return $this->getResource("explosives") >= 1;
+                case ACTION_SABOTAGE_FACTORY:
+                    return $this->getResource(RESOURCE_EXPLOSIVES) >= 1;
                     break;
-                case "deliverIntel":
-                    return $this->getResource("intel") >= 2;
+                case ACTION_DELIVER_INTEL:
+                    return $this->getResource(RESOURCE_INTEL) >= 2;
                     break;
                 case ACTION_INSERT_MOLE:
-                    return $this->getResource("intel") >= 2;
+                    return $this->getResource(RESOURCE_INTEL) >= 2;
                     break;
                 default:
                     return true;
@@ -966,31 +1009,31 @@ class Game extends \Table {
 
         foreach($result as &$action) {
             switch($action['action_name']) {
-                case "getFood":
-                    if ($this->getAvailableResource("food") <= 0) {
+                case ACTION_GET_FOOD:
+                    if ($this->getAvailableResource(RESOURCE_FOOD) <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
-                case "getMedicine":
-                    if ($this->getAvailableResource("medicine") <= 0) {
+                case ACTION_GET_MEDICINE:
+                    if ($this->getAvailableResource(RESOURCE_MEDICINE) <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
-                case "getIntel":
-                    if ($this->getAvailableResource("intel") <= 0) {
+                case ACTION_GET_INTEL:
+                    if ($this->getAvailableResource(RESOURCE_INTEL) <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
-                case "getMoney":
-                    if ($this->getAvailableResource("money") <= 0) {
+                case ACTION_GET_MONEY:
+                    if ($this->getAvailableResource(RESOURCE_MONEY) <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
                     break;
-                case "getMoneyForFood":
-                case "getMoneyForMedicine":
+                case ACTION_GET_MONEY_FOR_FOOD:
+                case ACTION_GET_MONEY_FOR_MEDICINE:
                     if ($this->getMorale() === 1) {
                         $action['action_description'] .= " (This will result in loosing the game)";
-                    } else if ($this->getAvailableResource("money") <= 0) {
+                    } else if ($this->getAvailableResource(RESOURCE_MONEY) <= 0) {
                         $action['action_description'] .= " (No effect)";
                     }
             }

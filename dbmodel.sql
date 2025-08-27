@@ -40,11 +40,11 @@ CREATE TABLE IF NOT EXISTS `round_data` (
     `action_taken` BOOLEAN DEFAULT FALSE,
     `placed_resistance` INT DEFAULT 0,
     `active_resistance` INT DEFAULT 0,
-    `resistance_in_game` INT DEFAULT 0,
+    `resistance_to_recruit` INT DEFAULT 0,
     `placed_milice` INT DEFAULT 0,
     `milice_in_game` INT DEFAULT 0,
-    `active_soldiers` INT DEFAULT 0,
     `placed_soldiers` INT DEFAULT 0,
+    `active_soldiers` INT DEFAULT 0,
     `selected_field` INT DEFAULT 0,
     `shot_today` BOOLEAN DEFAULT FALSE,
     `mole_inserted` BOOLEAN DEFAULT FALSE
