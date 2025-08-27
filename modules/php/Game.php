@@ -25,7 +25,12 @@ require_once("DataService.php");
 
 const BOARD = 'BOARD_STATE';
 
+const MISSION_MILICE_PARADE_DAY = "Milice Parade Day";
+const MISSION_OFFICERS_MANSION = "Officer\'s Mansion";
+const MISSION_SABOTAGE = 'Sabotage';
+const MISSION_UNDERGROUND_NEWSPAPER = 'Underground newspaper';
 const MISSION_INFILTRATION = 'Infiltration';
+const MISSION_GERMAN_SHEPARDS = 'German Shepards';
 
 const ACTION_INSERT_MOLE = 'insertMole';
 const ACTION_RECOVER_MOLE = 'recoverMole';
@@ -42,7 +47,7 @@ const ACTION_GET_WORKER = 'getWorker';
 const ACTION_COLLECT_ITEMS = 'collectItems';
 const ACTION_WRITE_GRAFFITI = 'writeGraffiti';
 const ACTION_COMPLETE_OFFICERS_MANSION_MISSION = 'completeOfficersMansionMission';
-const ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION = 'completeMilicieParadeDayMission';
+const ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION = 'completeMiliceParadeDayMission';
 const ACTION_GET_MONEY = 'getMoney';
 const ACTION_GET_EXPLOSIVES = 'getExplosives';
 const ACTION_GET_3_FOOD = 'get3Food';
@@ -151,7 +156,7 @@ class Game extends \Table {
 
         // Missions
 
-        $this->configureMissions(5, 6);
+        $this->configureMissions(1, 6);
 
         // Dummy content.
         $this->setGameStateInitialValue("my_first_global_variable", 0);
@@ -368,9 +373,9 @@ class Game extends \Table {
         $board = $this->getBoard();
         $roundData = $this->getRoundData();
         $morale = $roundData['morale'];
-        $round = $roundData['round'] + 1;
+        $round = (int) $roundData['round'] + 1;
 
-        if ($round == 14 || $round % 3 == 0) {
+        if ($this->isParadeDay($round)) {
             $morale--;
         }
 
@@ -946,9 +951,10 @@ class Game extends \Table {
                 WHERE ba.space_id = $spaceID AND a.is_safe = TRUE;
             ");
         }
-        
+        $this->debug("hello");
 
         $result = array_filter($result, function($action) use ($spaceID) {
+            $this->debug("actionName: " . $action['action_name']);
             switch ($action['action_name']) {
                 case ACTION_GET_WEAPON:
                     return $this->getResource(RESOURCE_MONEY) > 0;
@@ -965,14 +971,16 @@ class Game extends \Table {
                 case ACTION_GET_MONEY_FOR_MEDICINE:
                     return $this->getResource(RESOURCE_MEDICINE) > 0;
                 case ACTION_WRITE_GRAFFITI:
-                    return !$this->getHasMarker($spaceID) && !$this->getIsMissionCompleted(2);
+                    return !$this->getHasMarker($spaceID) && !$this->getIsMissionCompleted(MISSION_OFFICERS_MANSION);
                     break;
                 case ACTION_COMPLETE_OFFICERS_MANSION_MISSION:
-                    return $this->getHasMarker(1) && $this->getHasMarker(3) && $this->getHasMarker(11) && !$this->getIsMissionCompleted(2);
+                    return $this->getHasMarker(1) && $this->getHasMarker(3) && $this->getHasMarker(11) && !$this->getIsMissionCompleted(MISSION_OFFICERS_MANSION);
                     break;
                 case ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION:
                     $day = (int) $this->getRoundData()["round"];
-                    return $this->getResource(RESOURCE_WEAPON) > 0 && ($day == 14 || $day % 3 == 0);
+                    $this->debug("");
+                    $this->debug("canPerformMission " . ($this->getResource(RESOURCE_WEAPON) > 0 && $this->isParadeDay($day)));
+                    return $this->getResource(RESOURCE_WEAPON) > 0 && $this->isParadeDay($day);
                     break;
                 case ACTION_GET_WORKER:
                     return $this->getResource(RESOURCE_FOOD) > 0 && $this->getResistanceToRecruit() > 0;
@@ -1067,14 +1075,15 @@ class Game extends \Table {
             FROM board_path;
         ");
 
-        // $gameConfiguration = $this->getGameConfiguration();
-        // $roundData = $this->getRoundData();
+        $roundData = $this->getRoundData();
 
-        // return array_filter($result, function ($connection) use ($gameConfiguration, $roundData) {
-        //     return !((($connection['space_id_start'] == '1' && $connection['space_id_end'] == '2') || ($connection['space_id_start'] == '2' && $connection['space_id_end'] == '1')) && 
-        //             ((int) $roundData['round'] == 14 || (int) $roundData['round'] % 3 == 0) &&
-        //             (in_array('1', object_values($gameConfiguration))));
-        // });
+        return array_filter($result, function ($connection) use ($roundData) {
+            return !(
+                    (($connection['space_id_start'] == '1' && $connection['space_id_end'] == '2') || ($connection['space_id_start'] == '2' && $connection['space_id_end'] == '1')) && 
+                    $this->isParadeDay((int) $roundData["round"]) &&
+                    ($this->getIsMissionSelected(MISSION_MILICE_PARADE_DAY) && !$this->getIsMissionCompleted(MISSION_MILICE_PARADE_DAY))
+                );
+        });
         return $result;
     }
 
@@ -1166,18 +1175,18 @@ class Game extends \Table {
     protected function getCanShoot(): bool {
         $weapon = $this->getResource('weapon');
         $placedMilice = $this->getRoundData()['placed_milice'];
-        return ($weapon > 0 && !$this->getShotToday() && $placedMilice > 0) && !($this->getIsMissionSelected("German Shepards") && !$this->getIsMissionCompleted(6));
+        return ($weapon > 0 && !$this->getShotToday() && $placedMilice > 0) && !($this->getIsMissionSelected(MISSION_GERMAN_SHEPARDS) && !$this->getIsMissionCompleted(MISSION_GERMAN_SHEPARDS));
     }
 
     protected function getHasMarker(int $spaceID): bool {
         return (bool) $this->getUniqueValueFromDb("SELECT has_marker FROM board WHERE space_id = $spaceID;");
     }
 
-    protected function getIsMissionCompleted(int $missionID): bool {
+    protected function getIsMissionCompleted(string $missionName): bool {
         return (bool) $this->getUniqueValueFromDb("
             SELECT completed
             FROM mission
-            WHERE mission_id = $missionID;
+            WHERE mission_id = '$missionName';
         ");
     } 
 
@@ -1600,6 +1609,12 @@ class Game extends \Table {
 
         // $this->notify->all("routeChecked", clienttranslate("No escape route found"), array());
         return false;
+    }
+
+    // PREDICATES
+
+    protected function isParadeDay(int $day): bool {
+        return $day > 0 && ($day === 14 || $day % 3 === 0);
     }
 
     // BOILERPLATE
