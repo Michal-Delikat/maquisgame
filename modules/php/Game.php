@@ -524,10 +524,6 @@ class Game extends \Table {
     }
 
     public function arrestWorker(int $spaceID, bool $arrestedOnSite = false): void {
-        // if (!in_array($spaceID, $this->getSpacesWithResistanceWorkers())) {
-        //     return;
-        // }
-
         $spaceName = $this->getSpaceNameById($spaceID);
         $roundData = $this->getRoundData();
 
@@ -539,7 +535,6 @@ class Game extends \Table {
         
         $this->updatePlacedResistance($roundData['placed_resistance'] - 1);
         $this->updateActiveResistance($roundData['active_resistance'] - 1);
-        $this->setResistanceInGame($roundData['resistance_in_game'] - 1);
         
         $this->notify->all("workerRemoved", clienttranslate("Worker arrested at " . $spaceName), array(
             "activeSpace" => $spaceID
@@ -734,8 +729,10 @@ class Game extends \Table {
                 $this->decrementResourceQuantity(RESOURCE_FOOD);
                 break;
             case ACTION_GET_WORKER:
+                $roundData = $this->getRoundData();
                 $this->decrementResourceQuantity(RESOURCE_FOOD);
-                $this->updateActiveResistance($this->getRoundData()['active_resistance'] + 1);
+                $this->updateActiveResistance($roundData['active_resistance'] + 1);
+                $this->updateResistanceToRecruit($roundData['resistance_to_recruit'] - 1);
                 break;
             case ACTION_COLLECT_ITEMS:
                 $activeSpace = $this->getActiveSpace();
@@ -906,7 +903,7 @@ class Game extends \Table {
 
     protected function getRoundData(): array {
         return (array) $this->getObjectFromDb(
-            "SELECT `round`, `morale`, `active_soldiers`, `active_resistance`, `resistance_in_game`, `placed_resistance`, `placed_milice`, `placed_soldiers`, `milice_in_game` FROM `round_data`"
+            "SELECT `round`, `morale`, `active_soldiers`, `active_resistance`, `resistance_to_recruit`, `placed_resistance`, `placed_milice`, `placed_soldiers`, `milice_in_game` FROM `round_data`"
         );
     }
 
@@ -978,7 +975,7 @@ class Game extends \Table {
                     return $this->getResource(RESOURCE_WEAPON) > 0 && ($day == 14 || $day % 3 == 0);
                     break;
                 case ACTION_GET_WORKER:
-                    return $this->getResource(RESOURCE_FOOD) > 0 && $this->getActiveResistance() < $this->getResistanceInGame();
+                    return $this->getResource(RESOURCE_FOOD) > 0 && $this->getResistanceToRecruit() > 0;
                     break;
                 case ACTION_GET_SPARE_ROOM:
                     return !$this->getIsRoomPlaced($spaceID) && $this->getResource(RESOURCE_MONEY) >= 2;
@@ -1056,8 +1053,8 @@ class Game extends \Table {
         return (int) $this->getUniqueValueFromDb("SELECT active_resistance FROM round_data");
     }
 
-    protected function getResistanceInGame(): int {
-        return (int) $this->getUniqueValueFromDb("SELECT resistance_in_game FROM round_data");
+    protected function getResistanceToRecruit(): int {
+        return (int) $this->getUniqueValueFromDb("SELECT resistance_to_recruit FROM round_data");
     }
 
     protected function getActionTaken(): bool {
@@ -1306,6 +1303,17 @@ class Game extends \Table {
         ));
     }
 
+    protected function updateResistanceToRecruit($newNumber) {
+        self::DbQuery('
+            UPDATE round_data
+            SET resistance_to_recruit = ' . $newNumber . ';'
+        );
+
+        $this->notify->all("resistanceToRecruitUpdated", '', array(
+            "resistanceToRecruit" => $newNumber,
+        ));
+    }
+
     protected function updatePlacedMilice($newNumber) {
         self::DbQuery('
             UPDATE round_data
@@ -1509,10 +1517,10 @@ class Game extends \Table {
         }
     }
 
-    protected function setResistanceInGame(int $resistanceInGame): void {
+    protected function setResistanceToRecruit(int $resistanceToRecruit): void {
         self::DbQuery("
             UPDATE round_data
-            SET resistance_in_game = $resistanceInGame;
+            SET resistance_to_recruit = $resistanceToRecruit;
         ");
     }
 

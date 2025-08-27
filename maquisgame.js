@@ -33,19 +33,19 @@ function (dojo, declare) {
         setup: function(gamedatas) {
             // console.log("Starting game setup");
 
-            let current_round = parseInt(gamedatas.roundData.round);
-            let current_morale = parseInt(gamedatas.roundData.morale);
+            let currentRound = parseInt(gamedatas.roundData.round);
+            let currentMorale = parseInt(gamedatas.roundData.morale);
 
-            let placed_workers = parseInt(gamedatas.roundData.placed_resistance);
-            let active_workers = parseInt(gamedatas.roundData.active_resistance);
-            let resistanceInGame = parseInt(gamedatas.roundData.resistance_in_game);
+            let placedWorkers = parseInt(gamedatas.roundData.placed_resistance);
+            let activeWorkers = parseInt(gamedatas.roundData.active_resistance);
+            let resistanceToRecruit = parseInt(gamedatas.roundData.resistance_to_recruit);
 
-            let placed_milice = parseInt(gamedatas.roundData.placed_milice);
-            let active_milice = parseInt(gamedatas.activeMilice);
+            let placedMilice = parseInt(gamedatas.roundData.placed_milice);
+            let activeMilice = parseInt(gamedatas.activeMilice);
             let miliceInGame = parseInt(gamedatas.roundData.milice_in_game);
 
-            let placed_soldiers = parseInt(gamedatas.roundData.placed_soldiers);
-            let active_soldiers = parseInt(gamedatas.roundData.active_soldiers);
+            let placedSoldiers = parseInt(gamedatas.roundData.placed_soldiers);
+            let activeSoldiers = parseInt(gamedatas.roundData.active_soldiers);
 
             let board = gamedatas.board;
             let spacesWithItems = Object.values(gamedatas.spacesWithItems);
@@ -68,19 +68,19 @@ function (dojo, declare) {
                         <div id="resistance">
                             <div id="resistance-worker-icon"></div>
                             <div id="resistance-worker-numbers">
-                                <span id="placed-resistance">${placed_workers}</span>
+                                <span id="placed-resistance">${placedWorkers}</span>
                                 <span>|</span>
-                                <span id="active-resistance">${active_workers}</span>
+                                <span id="active-resistance">${activeWorkers}</span>
                                 <span>|</span>
-                                <span id="resistance-in-game">${resistanceInGame}</span>
+                                <span id="resistance-to-recruit">${resistanceToRecruit}</span>
                             </div>
                         </div>
                         <div id="milice">
                             <div id="milice-worker-icon"></div>
                             <div id="milice-worker-numbers">
-                                <span id="placed-milice">${placed_milice}</span>
+                                <span id="placed-milice">${placedMilice}</span>
                                 <span>|</span>
-                                <span id="active-milice">${active_milice}</span>
+                                <span id="active-milice">${activeMilice}</span>
                                 <span>|</span>
                                 <span id="milice-in-game">${miliceInGame}</span>
                             </div>
@@ -88,9 +88,9 @@ function (dojo, declare) {
                         <div id="soldiers">
                             <div id="soldier-worker-icon"></div>
                             <div id="soldier-worker-numbers">
-                                <span id="placed-soldiers">${placed_soldiers}</span>
+                                <span id="placed-soldiers">${placedSoldiers}</span>
                                 <span>|</span>
-                                <span id="active-soldiers">${active_soldiers}</span>
+                                <span id="active-soldiers">${activeSoldiers}</span>
                                 <span>|</span>
                                 <span id="soldiers-in-game">5</span>
                             </div>
@@ -182,7 +182,7 @@ function (dojo, declare) {
                 dojo.place(`<div id="morale-track-space-${i}" class="morale-track-space"></div>`, "morale-track");
             }
 
-            dojo.place(`<div id="marker-morale" class="marker"></div>`, `morale-track-space-${current_morale}`);
+            dojo.place(`<div id="marker-morale" class="marker"></div>`, `morale-track-space-${currentMorale}`);
 
             // SOLDIERS
 
@@ -190,7 +190,7 @@ function (dojo, declare) {
                 dojo.place(`<div id="soldiers-track-space-${i}" class="soldiers-track-space"></div>`, "soldiers-track");
             }
 
-            dojo.place('<div id="marker-soldiers" class="marker"></div>', `soldiers-track-space-${active_soldiers}`);
+            dojo.place('<div id="marker-soldiers" class="marker"></div>', `soldiers-track-space-${activeSoldiers}`);
 
             // ROUND NUMBER
             
@@ -198,7 +198,7 @@ function (dojo, declare) {
                 dojo.place(`<div id="round-number-space-${i}" class="round-number-space"></div>`, 'round-number-spaces')
             }
 
-            dojo.place(`<div id="marker-round" class="marker"></div>`, `round-number-space-${current_round}`);
+            dojo.place(`<div id="marker-round" class="marker"></div>`, `round-number-space-${currentRound}`);
             
             // BOARD SPACES
 
@@ -393,12 +393,6 @@ function (dojo, declare) {
             this.placeOnObject(`resistance-${workerID}`, 'resistance-worker-icon');
             const animation = this.slideToObject(`resistance-${workerID}`, `space-${spaceID}-worker-space`);
             await this.bgaPlayDojoAnimation(animation);
-
-            let dialog = new ebg.popindialog();
-            dialog.create('myModalDialog');
-            dialog.setTitle(_("Modal Title"));
-            dialog.setContent(_("This is the modal content."));
-            dialog.show()
         },
         
         placeMilice: async function(spaceID) {
@@ -609,6 +603,10 @@ function (dojo, declare) {
 
         notif_placedResistanceUpdated: function(notif) {
             dojo.byId(`placed-resistance`).innerHTML = notif.placedResistance;
+        },
+
+        notif_resistanceToRecruitUpdated: function({resistanceToRecruit}) {
+            dojo.byId(`resistance-to-recruit`).innerHTML = resistanceToRecruit;
         },
 
         notif_placedMiliceUpdated: function({placedMilice}) {

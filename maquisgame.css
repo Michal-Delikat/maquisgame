@@ -112,7 +112,7 @@
 }
 
 .worker {
-    width: 64px;
+    width: 50px;
     aspect-ratio: 1;
     background-size: 400%;
     background-image: url('img/Meeples.png');
@@ -124,7 +124,7 @@
 
 @media (min-width: 1680px) {
     .worker {
-        width: 3.5vw;
+        width: 3vw;
     }
 }
 
@@ -317,7 +317,7 @@
 }
 
 #mission-6 > .mission-space {
-    top: 12.5%;
+    top: 13%;
 }
 
 #mission-4 > .mission-card-front {
@@ -435,7 +435,11 @@
     width: 26.7%;
     height: 13.5%;
     top: 50.5%;
-    left: 65%
+    left: 66%
+}
+
+.mission-space > .worker-space {
+    top: -30%;
 }
 
 .room-tile-space {
@@ -544,11 +548,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    top: 2.45%;
-    left: 2.8%;
-    width: 18px;
-    height: 94.5%;
-    border: 1px transparent solid;
+    top: 3.15%;
+    left: 3.3%;
+    width: 2.5%;
+    height: 93.5%;
 }
 
 #help-card, #morale-and-soldiers-track, #patrol-discard, #patrol-deck {
@@ -556,8 +559,8 @@
 }
 
 .round-number-space {
-    width: 18px;
-    height: 30px;
+    width: 100%;
+    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-items: center;
