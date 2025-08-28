@@ -150,7 +150,7 @@ class DataService {
             (16, 15),
             (16, 17),
 
-            (17, 16)
+            (17, 16);
         ';
     }
 
@@ -165,8 +165,8 @@ class DataService {
             ("weapon"),
             ("intel"),
             ("poison"),
-            ("fake_id")
-        ;';
+            ("fake_id");
+        ';
     }
 
     public static function setupMissions(): string {
@@ -178,7 +178,8 @@ class DataService {
             ("Sabotage"),
             ("Underground newspaper"),
             ("Infiltration"),
-            ("German Shepards"); 
+            ("German Shepards"),
+            ("Double Agent");
         ';
     }
 

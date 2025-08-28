@@ -31,6 +31,7 @@ const MISSION_SABOTAGE = 'Sabotage';
 const MISSION_UNDERGROUND_NEWSPAPER = 'Underground newspaper';
 const MISSION_INFILTRATION = 'Infiltration';
 const MISSION_GERMAN_SHEPARDS = 'German Shepards';
+const MISSION_DOUBLE_AGENT = 'Double Agent';
 
 const ACTION_INSERT_MOLE = 'insertMole';
 const ACTION_RECOVER_MOLE = 'recoverMole';
@@ -156,7 +157,7 @@ class Game extends \Table {
 
         // Missions
 
-        $this->configureMissions(1, 6);
+        $this->configureMissions(1, 7);
 
         // Dummy content.
         $this->setGameStateInitialValue("my_first_global_variable", 0);
@@ -173,10 +174,7 @@ class Game extends \Table {
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
 
-        $this->updateResourceQuantity(RESOURCE_FOOD, 3);
-        $this->updateResourceQuantity(RESOURCE_MEDICINE, 3);
         $this->updateResourceQuantity(RESOURCE_WEAPON, 1);
-        $this->updateResourceQuantity(RESOURCE_INTEL, 4);
     }
 
     public function actPlaceWorker(int $spaceID): void {
@@ -460,7 +458,9 @@ class Game extends \Table {
     // ARGS
 
     public function argPlaceWorker(): array {
-        return $this->getEmptySpaces();
+        return [
+            "emptyFields" => $this->getEmptySpaces()
+        ];
     }
 
     public function argActivateWorker(): array {
@@ -478,35 +478,43 @@ class Game extends \Table {
     }
 
     public function argSelectField(): array {
-        return $this->getEmptyFields();
+        return [
+            "emptyFields" => $this->getEmptyFields()
+        ];
     }
 
     public function argSelectSupplies(): array {
         $options = [
             [
-                RESOURCE_FOOD,
-                "Airdrop 3 food"
+                "resourceName" => RESOURCE_FOOD,
+                "airdropOptionDescription" => "Airdrop 3 food"
             ], 
             [
-                RESOURCE_MONEY,
-                "Airdrop 1 money"
+                "resourceName" => RESOURCE_MONEY,
+                "airdropOptionDescription" => "Airdrop 1 money"
             ], 
             [
-                RESOURCE_WEAPON,
-                "Airdrop 1 weapon"
+                "resourceName" => RESOURCE_WEAPON,
+                "airdropOptionDescription" => "Airdrop 1 weapon"
             ]
         ];
 
-        return array_filter($options, function($option) {
-            return $this->getAvailableResource($option[0]);
+        $options = array_filter($options, function($option) {
+            return $this->getAvailableResource($option["resourceName"]) > 0;
         });
+
+        return [
+            "options" => $options
+        ];
     }
 
     public function argShootMilice(): array {
+        // TODO Turn into assosiative array.
         return $this->getSpacesWithMilice();
     }
 
     public function argSelectRoom(): array {
+        // TODO Turn into assosiative array.
         return $this->getAvailableRooms();
     }
 
@@ -591,6 +599,9 @@ class Game extends \Table {
         if (in_array(6, $missionNumbers)) {
             $missionSpace = $missionAID == 6 ? 18 : 21;
             $this->addSpaceAction($missionSpace, ACTION_POISON_SHEPARDS);
+        }
+
+        if (in_array(7, $missionNumbers)) {
         }
     }
 

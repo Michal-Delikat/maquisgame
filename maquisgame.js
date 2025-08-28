@@ -274,7 +274,7 @@ function (dojo, declare) {
             
             switch(stateName) {
                 case 'placeWorker':
-                    const emptySpaces = Object.values(args.args);
+                    const emptySpaces = Object.values(args.args.emptyFields);
                                         
                     emptySpaces.forEach(spaceID => {
                         let space = dojo.byId(`space-${spaceID}-background-space`);
@@ -303,7 +303,7 @@ function (dojo, declare) {
                     break;
 
                 case 'airdropSelectField':
-                    const emptyFields = Object.values(args.args);
+                    const emptyFields = Object.values(args.args.emptyFields);
                     
                     emptyFields.forEach(field => {
                         let space = dojo.byId(`space-${field.space_id}-background-space`);
@@ -362,17 +362,17 @@ function (dojo, declare) {
                         break;
 
                     case 'takeAction':
-                        Object.values(args.actions).forEach(action => this.addActionButton('actTakeAction_' + `${action.action_name}`, _(`${action.action_description}`), () => this.bgaPerformAction("actTakeAction", { actionName: action.action_name }), null, null, action.action_name == 'return' ? 'gray' : 'blue'));
+                        Object.values(args.actions).forEach(action => this.addActionButton('actTakeAction_' + `${action.action_name}`, (`${action.action_description}`), () => this.bgaPerformAction("actTakeAction", { actionName: action.action_name }), null, null, action.action_name == 'return' ? 'gray' : 'blue'));
                         this.addActionButton('actBack', _('Back'), () => this.bgaPerformAction("actBack"), null, null, 'red');
                         break;
 
                     case 'airdropSelectSupplies':
-                        Object.values(args).forEach(option => this.addActionButton('actAirdropSelectSupplies_' + `${option[0]}`, _(`${option[1]}`), () => this.bgaPerformAction("actSelectSupplies", { supplyType: option[0]}), null, null, 'blue'));
+                        Object.values(args.options).forEach(option => this.addActionButton('actAirdropSelectSupplies_' + `${option["resourceName"]}`, (`${option["airdropOptionDescription"]}`), () => this.bgaPerformAction("actSelectSupplies", { supplyType: option["resourceName"]}), null, null, 'blue'));
                         break;
 
                     case 'selectSpareRoom':
                         console.log(Object.values(args));
-                        Object.values(args).forEach(room => this.addActionButton('actSelectRoom_' + `${room.room_id}`, _(`${room.room_name}`), () => this.bgaPerformAction("actSelectRoom", { roomID: room.room_id}), null, null, 'blue'));
+                        Object.values(args).forEach(room => this.addActionButton('actSelectRoom_' + `${room.room_id}`, (`${room.room_name}`), () => this.bgaPerformAction("actSelectRoom", { roomID: room.room_id}), null, null, 'blue'));
                         break;
 
                     case 'shootMilice':
