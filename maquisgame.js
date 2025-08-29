@@ -569,12 +569,16 @@ function (dojo, declare) {
             this.placeWorker(spaceID);
         },
 
-        notif_patrolPlaced: function({placeSoldier, spaceID, patrolCardID}) {
+        notif_patrolPlaced: function({placeSoldier, spaceID}) {
             if (placeSoldier) {
                 this.placeSoldier(spaceID);
             } else {
                 this.placeMilice(spaceID);
             }
+        },
+        
+        notif_patrolCardDiscarded: function({patrolCardID}) {
+            console.log(patrolCardID);
             this.discardPatrolCard(patrolCardID);
         },
 

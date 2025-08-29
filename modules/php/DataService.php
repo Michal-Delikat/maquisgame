@@ -2,6 +2,8 @@
 
 namespace Bga\Games\MaquisGame;
 
+require_once("constants.inc.php");
+
 class DataService {
     public static function setupRoundData(): string {
         return '
@@ -39,33 +41,35 @@ class DataService {
         return '
             INSERT INTO action (action_id, action_name, action_description, is_safe)
             VALUES
-            (1, "getWeapon", "Pay 1 money to gain 1 weapon", FALSE),
-            (2, "getIntel", "Gain 1 intel", FALSE),
-            (3, "airdrop", "Airdop supplies onto an empty field", FALSE),
-            (4, "getMedicine", "Gain 1 medicine", FALSE),
-            (5, "payForMorale", "Pay 1 food and 1 medicine to gain 1 morale", TRUE),
-            (6, "getMoneyForFood", "Pay 1 food to gain 1 money and lose 1 morale", FALSE),
-            (7, "getSpareRoom", "Pay 2 money to gain a spare room", TRUE),
-            (8, "getFood", "Gain 1 food", FALSE),
-            (9, "getWorker", "Pay 1 food to gain 1 worker", FALSE),
-            (10, "getMoneyForMedicine", "Pay 1 medicine to gain 1 money and lose 1 morale", FALSE),
-            (11, "collectItems", "Collect items", FALSE),
-            (12, "writeGraffiti", "Write anti-fascist graffiti", FALSE),
-            (13, "completeOfficersMansionMission", "Complete Mission", TRUE),
-            (14, "completeMiliceParadeDayMission", "Complete Mission", TRUE),
-            (15, "getMoney", "Gain 1 money", FALSE),
-            (16, "getExplosives", "Pay 1 medicine to gain 1 explosives", FALSE),
-            (17, "get3Food", "Gain 3 food", FALSE),
-            (18, "get3Medicine", "Gain 3 medicine", FALSE),
-            (19, "increaseMorale", "Increase morale by 1", TRUE),
-            (20, "getPoison", "Pay 2 medicine to gain 1 poison", FALSE),
-            (21, "getFakeId", "Pay 1 money and 2 intel to gain 1 fake id", FALSE),
-            (22, "infiltrateFactory", "Infiltrate Factory", TRUE),
-            (23, "sabotageFactory", "Sabotage Factory", TRUE),
-            (24, "deliverIntel", "Deliver 2 Intel", TRUE),
-            (25, "insertMole", "Insert Mole", TRUE),
-            (26, "recoverMole", "Recover mole and complete mission", TRUE),
-            (27, "poisonShepards", "Poison Shepards", TRUE);
+            (1, "' . ACTION_GET_WEAPON . '", "Pay 1 money to gain 1 weapon", FALSE),
+            (2, "' . ACTION_GET_INTEL . '", "Gain 1 intel", FALSE),
+            (3, "' . ACTION_AIRDROP . '", "Airdop supplies onto an empty field", FALSE),
+            (4, "' . ACTION_GET_MEDICINE . '", "Gain 1 medicine", FALSE),
+            (5, "' . ACTION_PAY_FOR_MORALE . '", "Pay 1 food and 1 medicine to gain 1 morale", TRUE),
+            (6, "' . ACTION_GET_MONEY_FOR_FOOD . '", "Pay 1 food to gain 1 money and lose 1 morale", FALSE),
+            (7, "' . ACTION_GET_SPARE_ROOM . '", "Pay 2 money to gain a spare room", TRUE),
+            (8, "' . ACTION_GET_FOOD . '", "Gain 1 food", FALSE),
+            (9, "' . ACTION_GET_WORKER . '", "Pay 1 food to gain 1 worker", FALSE),
+            (10, "' . ACTION_GET_MONEY_FOR_MEDICINE . '", "Pay 1 medicine to gain 1 money and lose 1 morale", FALSE),
+            (11, "' . ACTION_COLLECT_ITEMS . '", "Collect items", FALSE),
+            (12, "' . ACTION_WRITE_GRAFFITI . '", "Write anti-fascist graffiti", FALSE),
+            (13, "' . ACTION_COMPLETE_OFFICERS_MANSION_MISSION . '", "Complete Mission", TRUE),
+            (14, "' . ACTION_COMPLETE_MILICE_PARADE_DAY_MISSION . '", "Complete Mission", TRUE),
+            (15, "' . ACTION_GET_MONEY . '", "Gain 1 money", FALSE),
+            (16, "' . ACTION_GET_EXPLOSIVES . '", "Pay 1 medicine to gain 1 explosives", FALSE),
+            (17, "' . ACTION_GET_3_FOOD . '", "Gain 3 food", FALSE),
+            (18, "' . ACTION_GET_3_MEDICINE . '", "Gain 3 medicine", FALSE),
+            (19, "' . ACTION_INCREASE_MORALE . '", "Increase morale by 1", TRUE),
+            (20, "' . ACTION_GET_POISON . '", "Pay 2 medicine to gain 1 poison", FALSE),
+            (21, "' . ACTION_GET_FAKE_ID . '", "Pay 1 money and 2 intel to gain 1 fake id", FALSE),
+            (22, "' . ACTION_INFILTRATE_FACTORY . '", "Infiltrate Factory", TRUE),
+            (23, "' . ACTION_SABOTAGE_FACTORY . '", "Sabotage Factory", TRUE),
+            (24, "' . ACTION_DELIVER_INTEL . '", "Deliver 2 Intel", TRUE),
+            (25, "' . ACTION_INSERT_MOLE . '", "Insert Mole", TRUE),
+            (26, "' . ACTION_RECOVER_MOLE . '", "Recover mole and complete mission", TRUE),
+            (27, "' . ACTION_POISON_SHEPARDS . '", "Poison Shepards", TRUE),
+            (28, "' . ACTION_SEEK_DOUBLE_AGENT . '", "Seek Double Agent", TRUE),
+            (29, "' . ACTION_COMPLETE_DOUBLE_AGENT_MISSION . '", "Complete the mission", TRUE);
         ';
     }
 
@@ -158,14 +162,14 @@ class DataService {
         return '
             INSERT INTO resource (resource_name)
             VALUES
-            ("food"),
-            ("medicine"),
-            ("money"),
-            ("explosives"),
-            ("weapon"),
-            ("intel"),
-            ("poison"),
-            ("fake_id");
+            ("' . RESOURCE_FOOD . '"),
+            ("' . RESOURCE_MEDICINE . '"),
+            ("' . RESOURCE_MONEY . '"),
+            ("' . RESOURCE_EXPLOSIVES . '"),
+            ("' . RESOURCE_WEAPON . '"),
+            ("' . RESOURCE_INTEL . '"),
+            ("' . RESOURCE_POISON . '"),
+            ("' . RESOURCE_FAKE_ID . '");
         ';
     }
 
@@ -173,13 +177,13 @@ class DataService {
         return '
             INSERT INTO mission (mission_name)
             VALUES
-            ("Milice Parade Day"),
-            ("Officer\'s Mansion"),
-            ("Sabotage"),
-            ("Underground newspaper"),
-            ("Infiltration"),
-            ("German Shepards"),
-            ("Double Agent");
+            ("' . MISSION_MILICE_PARADE_DAY . '"),
+            ("' . MISSION_OFFICERS_MANSION . '"),
+            ("' . MISSION_SABOTAGE . '"),
+            ("' . MISSION_UNDERGROUND_NEWSPAPER . '"),
+            ("' . MISSION_INFILTRATION . '"),
+            ("' . MISSION_GERMAN_SHEPARDS . '"),
+            ("' . MISSION_DOUBLE_AGENT . '");
         ';
     }
 
@@ -187,15 +191,15 @@ class DataService {
         return '
             INSERT INTO room (room_name)
             VALUES
-            ("Informant"),
-            ("Counterfeiter"),
-            ("Safe House"),
-            ("Chemist\'s Lab"),
-            ("Smuggler"),
-            ("Propagandist"),
-            ("Fixer"),
-            ("Pharmacist"),
-            ("Forger");
+            ("' . ROOM_INFORMANT . '"),
+            ("' . ROOM_COUNTERFEITER . '"),
+            ("' . ROOM_SAFE_HOUSE . '"),
+            ("' . ROOM_CHEMISTS_LAB . '"),
+            ("' . ROOM_SMUGGLER . '"),
+            ("' . ROOM_PROPAGANDIST . '"),
+            ("' . ROOM_FIXER . '"),
+            ("' . ROOM_PHARMACIST . '"),
+            ("' . ROOM_FORGER . '");
         ';
     }
 }
