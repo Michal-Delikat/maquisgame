@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `resource` (
 
 CREATE TABLE IF NOT EXISTS `mission` (
     `mission_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `mission_name` VARCHAR(16) NOT NULL,
+    `mission_name` VARCHAR(32) NOT NULL,
     `selected` BOOLEAN NOT NULL DEFAULT FALSE,
     `completed` BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (`mission_id`)
