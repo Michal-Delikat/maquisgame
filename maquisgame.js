@@ -227,21 +227,21 @@ function (dojo, declare) {
             for (let i = 1; i <= 23; i++) {
                 if (board[i]) {
                     if (parseInt(board[i].has_worker)) {
-                        this.placeWorker(i);
+                        this.placeWorker(i, false);
                     } else if (parseInt(board[i].has_milice)) {
-                        this.placeMilice(i);
+                        this.placeMilice(i, false);
                     } else if (parseInt(board[i].has_soldier)) {
-                        this.placeSoldier(i);
+                        this.placeSoldier(i, false);
                     }
 
                     if (parseInt(board[i].has_marker)) {
-                        this.placeMissionMarker(board[i].space_id)
+                        this.placeMissionMarker(board[i].space_id, false);
                     }
                 }
             }
 
             spacesWithItems.forEach(space => {
-                this.placeItems(space.space_id, space.item, space.quantity);
+                this.placeItems(space.space_id, space.item, space.quantity, false);
             });
 
             spacesWithRooms.forEach(space => {
@@ -254,7 +254,7 @@ function (dojo, declare) {
                 <div id="room-tile-${room.room_id}" class="room-tile"></div>
             `, `room-tiles`));
 
-            Object.values(discardedPatrolCards).forEach((card) => this.discardPatrolCard(card.type_arg));
+            Object.values(discardedPatrolCards).forEach((card) => this.discardPatrolCard(card.type_arg, false));
 
             // Event Listeners
 
@@ -270,7 +270,7 @@ function (dojo, declare) {
         //// Game & client states
         
         onEnteringState: function(stateName, args) {
-            console.log('Entering state: ' + stateName, args);
+            // console.log('Entering state: ' + stateName, args);
             
             switch(stateName) {
                 case 'placeWorker':
@@ -294,7 +294,6 @@ function (dojo, declare) {
                     break;
 
                 case 'takeAction':
-                    console.log(args);
                     const activeSpaceID = args.args.activeSpace;
 
                     let activeSpace = dojo.byId(`space-${activeSpaceID}-background-space`);
@@ -324,7 +323,7 @@ function (dojo, declare) {
 
         
         onLeavingState: function(stateName) {
-            console.log('Leaving state: ' + stateName);
+            // console.log('Leaving state: ' + stateName);
             
             switch(stateName)
             {
@@ -371,7 +370,6 @@ function (dojo, declare) {
                         break;
 
                     case 'selectSpareRoom':
-                        console.log(Object.values(args));
                         Object.values(args).forEach(room => this.addActionButton('actSelectRoom_' + `${room.room_id}`, (`${room.room_name}`), () => this.bgaPerformAction("actSelectRoom", { roomID: room.room_id}), null, null, 'blue'));
                         break;
 
@@ -385,41 +383,50 @@ function (dojo, declare) {
         ///////////////////////////////////////////////////
         //// Utility methods
         
-        placeWorker: async function(spaceID) {
-            const workerIDs = dojo.query(".resistance").map(node => node.id);
-            const workerID = workerIDs.length
+        placeWorker: async function(spaceID, animate = true) {
+            const workerIDs = dojo.query(".resistance").map(node => node.id);            
+            let availableWorkerIDs = [1, 2, 3, 4, 5].filter((id) => !workerIDs.includes('resistance-' + id));
+            const workerID = availableWorkerIDs[0];
 
             dojo.place(`<div id="resistance-${workerID}" class="worker resistance"></div>`, `space-${spaceID}-worker-space`);            
-            this.placeOnObject(`resistance-${workerID}`, 'resistance-worker-icon');
-            const animation = this.slideToObject(`resistance-${workerID}`, `space-${spaceID}-worker-space`);
-            await this.bgaPlayDojoAnimation(animation);
+            if (animate) {
+                this.placeOnObject(`resistance-${workerID}`, 'resistance-worker-icon');
+                const animation = this.slideToObject(`resistance-${workerID}`, `space-${spaceID}-worker-space`);
+                await this.bgaPlayDojoAnimation(animation);
+            }
         },
         
-        placeMilice: async function(spaceID) {
+        placeMilice: async function(spaceID, animate = true) {
             const miliceIDs = dojo.query(".milice").map(node => node.id);
             const miliceID = miliceIDs.length;
 
             dojo.place(`<div id="milice-${miliceID}" class="worker milice"></div>`, `space-${spaceID}-worker-space`);
-            this.placeOnObject(`milice-${miliceID}`, 'player_boards');
-            const animation = this.slideToObject(`milice-${miliceID}`, `space-${spaceID}-worker-space`);
-            await this.bgaPlayDojoAnimation(animation);
+            if (animate) {
+                this.placeOnObject(`milice-${miliceID}`, 'player_boards');
+                const animation = this.slideToObject(`milice-${miliceID}`, `space-${spaceID}-worker-space`);
+                await this.bgaPlayDojoAnimation(animation);
+            }
         },
 
-        placeSoldier: async function(spaceID) {
+        placeSoldier: async function(spaceID, animate = true) {
             const soldierIDs = dojo.query(".soldier").map(node => node.id);
             const soldierID = soldierIDs.length;
 
             dojo.place(`<div id="soldier-${soldierID}" class="worker soldier"></div>`, `space-${spaceID}-worker-space`);
-            this.placeOnObject(`soldier-${soldierID}`, 'player_boards');
-            const animation = this.slideToObject(`soldier-${soldierID}`, `space-${spaceID}-worker-space`);
-            await this.bgaPlayDojoAnimation(animation);
+            if (animate) {
+                this.placeOnObject(`soldier-${soldierID}`, 'player_boards');
+                const animation = this.slideToObject(`soldier-${soldierID}`, `space-${spaceID}-worker-space`);
+                await this.bgaPlayDojoAnimation(animation);
+            }
         },
 
-        discardPatrolCard: async function(patrolCardID) {
+        discardPatrolCard: async function(patrolCardID, animate = true) {
             dojo.place(`<div id="patrol-${patrolCardID}" class="patrol-card card"></div>`, 'patrol-discard');
-            this.placeOnObject(`patrol-${patrolCardID}`, 'patrol-deck');
-            const animation = this.slideToObject(`patrol-${patrolCardID}`, `patrol-discard`);
-            await this.bgaPlayDojoAnimation(animation);
+            if (animate) {
+                this.placeOnObject(`patrol-${patrolCardID}`, 'patrol-deck');
+                const animation = this.slideToObject(`patrol-${patrolCardID}`, `patrol-discard`);
+                await this.bgaPlayDojoAnimation(animation);
+            }
         },
 
         removeWorker: async function(spaceID) {
@@ -440,16 +447,17 @@ function (dojo, declare) {
             dojo.destroy(`${patrolID}`);
         },
 
-        placeItems: async function(spaceID, itemType, quantity) {
+        placeItems: async function(spaceID, itemType, quantity, animate = true) {
             for (let i = 0; i < quantity; i++) {
                 let tokenID = `${itemType}-token-${i + 1}`;
                 let targetID = `space-${spaceID}-token-space-${i + 1}`;
 
                 dojo.place(`<div id=${tokenID} class="token ${itemType}-token"></div>`, targetID);
-                this.placeOnObject(tokenID, `${itemType}-icon`);
-                
-                const animation = this.slideToObject(tokenID, targetID);
-                await this.bgaPlayDojoAnimation(animation);
+                if (animate) {
+                    this.placeOnObject(tokenID, `${itemType}-icon`);
+                    const animation = this.slideToObject(tokenID, targetID);
+                    await this.bgaPlayDojoAnimation(animation);
+                }
             }
         },
 
@@ -481,14 +489,16 @@ function (dojo, declare) {
             await this.bgaPlayDojoAnimation(animation);
         },
 
-        placeMissionMarker: async function(spaceID) {
+        placeMissionMarker: async function(spaceID, animate = true) {
             const markerIDs = dojo.query(".marker-mission").map(node => node.id);
             const markerID = markerIDs.length
 
             dojo.place(`<div id="mission-marker-${markerID}" class="marker marker-mission"></div>`, `space-${spaceID}-marker-space`);
-            this.placeOnObject(`mission-marker-${markerID}`, 'player_boards');
-            const animation = this.slideToObject(`mission-marker-${markerID}`, `space-${spaceID}-marker-space`);
-            await this.bgaPlayDojoAnimation(animation);
+            if (animate) {
+                this.placeOnObject(`mission-marker-${markerID}`, 'player_boards');
+                const animation = this.slideToObject(`mission-marker-${markerID}`, `space-${spaceID}-marker-space`);
+                await this.bgaPlayDojoAnimation(animation);
+            }
         },
 
         removeMarker: async function(spaceID) {
@@ -510,6 +520,15 @@ function (dojo, declare) {
 
         placeRoomTile: async function(spaceID, roomID) {
             dojo.place(`<div id="room-tile-${roomID}" class="room-tile"></div>`, `space-${spaceID}-room-tile-space`);
+        },
+
+        displayModalWithCard: function(cardId, title) {
+            let dialog = new ebg.popindialog();
+            dialog.create('cardDialog');
+            dialog.setTitle(title);
+            dialog.setContent(`<div id="patrol-${cardId}" class="card patrol-card"></div>`);
+            dialog.resize(200, 300);
+            dialog.show();
         },
 
         ///////////////////////////////////////////////////
@@ -578,24 +597,9 @@ function (dojo, declare) {
         },
         
         notif_patrolCardDiscarded: function({patrolCardID}) {
-            console.log(patrolCardID);
+            console.log("discardedCardId:", patrolCardID);
             this.discardPatrolCard(patrolCardID);
         },
-
-        // notif_spaceActivated: function(notif) {
-        //     console.log('notif_workerActivated');
-        //     console.log(notif);
-        // },
-
-        // notif_actionTaken: function(notif) {
-        //     console.log('notif_actionTaken');
-        //     console.log(notif);
-        // },
-
-        // notif_routeChecked: function(notif) {
-        //     console.log('notif_routeChecked');
-        //     console.log(notif);
-        // },
 
         notif_workerRemoved: function(notif) {
             this.removeWorker(notif.activeSpace);
@@ -632,7 +636,6 @@ function (dojo, declare) {
         },
 
         notif_activeResistanceUpdated: function(notif) {
-            console.log(notif);
             dojo.byId("active-resistance").innerHTML = notif.active_resistance;
         },
 
@@ -664,12 +667,19 @@ function (dojo, declare) {
 
         notif_roomPlaced: function({roomID, spaceID}) {
             this.placeRoomTile(spaceID, roomID);
-        }
-        // notif_workerArrested: function(notif) {
-        //     console.log('notif_workerArrested');
-        //     console.log(notif);
+        },
 
-        //     this.returnWorker(notif.activeSpace);
-        // }
+        notif_cardPeeked: function({cardId}) {
+            console.log("cardId:", cardId);
+            this.displayModalWithCard(cardId, "Next Patrol card");
+        },
+        
+        notif_patrolCardsShuffled: function() {
+            console.log("patrolCardShuffled");
+        },
+
+        notif_darkLadyFound: function(cardId) {
+            this.displayModalWithCard(cardId, "Dark Lady found at place #1");
+        }
    });
 });
