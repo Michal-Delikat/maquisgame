@@ -43,6 +43,8 @@ class Game extends \Table {
     public function __construct() {
         parent::__construct();
         require('material.inc.php');
+
+        $this->PATROL_CARD_ITEMS = PATROL_CARD_ITEMS;
         
         $this->initGameStateLabels([
             "my_first_global_variable" => 10,
@@ -147,7 +149,7 @@ class Game extends \Table {
 
         // $card = $this->PATROL_CARD_ITEMS[$cardID - 1];
 
-        $card = $this->drawPatrolCard();
+        $card = $this->PATROL_CARD_ITEMS[$this->drawPatrolCard() - 1];
 
         $spaceID = null;
         $emptySpaces = $this->getEmptySpaces();
@@ -183,13 +185,12 @@ class Game extends \Table {
             $placeSoldier = $this->getPatrolsToPlace() - $roundData['active_soldiers'] < $roundData['placed_milice'] + 1;
 
             if ($placeSoldier) {
-                $this->updateSpace($spaceID, hasSoldier: true);
+                $this->updateSpace($spaceID, hasWorker: $arrestedOnsite, hasSoldier: true);
                 $this->updatePlacedSoldiers($roundData['placed_soldiers'] + 1);
             } else {
-                $this->updateSpace($spaceID, hasMilice: true);
+                $this->updateSpace($spaceID, hasWorker: $arrestedOnsite, hasMilice: true);
                 $this->updatePlacedMilice($roundData['placed_milice'] + 1);
             }
-            
 
             $this->notify->all("patrolPlaced", clienttranslate("Patrol placed at $spaceName"), array(
                 "placeSoldier" => $placeSoldier,
@@ -763,9 +764,9 @@ class Game extends \Table {
                 $this->setHasMarker($activeSpace, true);
                 $this->addBoardSpace($activeSpace + 1, MISSION_SABOTAGE);
                 if ($activeSpace == 19 || $activeSpace == 22) {
-                    $this->addSpaceAction($activeSpace + 1, "sabotageFactory");
+                    $this->addSpaceAction($activeSpace + 1, ACTION_SABOTAGE_FACTORY);
                 } else {
-                    $this->addSpaceAction($activeSpace + 1, "infiltrateFactory");
+                    $this->addSpaceAction($activeSpace + 1, ACTION_INFILTRATE_FACTORY);
                 }
                 break;
             case ACTION_SABOTAGE_FACTORY:
@@ -780,7 +781,7 @@ class Game extends \Table {
                 } else {
                     $this->setHasMarker($activeSpace, true);
                     $this->addBoardSpace($activeSpace + 1, MISSION_UNDERGROUND_NEWSPAPER);
-                    $this->addSpaceAction($activeSpace + 1, "deliverIntel");
+                    $this->addSpaceAction($activeSpace + 1, ACTION_DELIVER_INTEL);
                 }
                 break;
             case ACTION_INSERT_MOLE:
@@ -807,7 +808,7 @@ class Game extends \Table {
                 } else {
                     $this->setHasMarker($activeSpace, true);
                     $this->addBoardSpace($activeSpace + 1, MISSION_GERMAN_SHEPARDS);
-                    $this->addSpaceAction($activeSpace + 1, "poisonShepards");
+                    $this->addSpaceAction($activeSpace + 1, ACTION_POISON_SHEPARDS);
                 }
                 break;
             case ACTION_SEEK_DOUBLE_AGENT:
@@ -815,12 +816,13 @@ class Game extends \Table {
                 $this->setHasMarker($activeSpace, true);
 
                 if  ($this->countMarkersInSpaces([1, 3, 5, 6, 9, 11]) >= 6) {
-                    $card = $this->drawPatrolCard();
+                    $cardID = $this->drawPatrolCard();
+                    $card = $this->PATROL_CARD_ITEMS[$cardID - 1];
                     $doubleAgentLocation = $card['space_a'];
                     $this->addSpaceAction($doubleAgentLocation, ACTION_COMPLETE_DOUBLE_AGENT_MISSION);
                     
-                    $this->notify->all("darkLadyFound", clienttranslate("Dark Lady found at " . $card['space_a']), array(
-                        "cardId" => $card['id']
+                    $this->notify->all("darkLadyFound", clienttranslate("Dark Lady found at " . $this->getSpaceNameById($card['space_a'])), array(
+                        "cardId" => $cardID
                     ));
                 }
                 break;
@@ -1092,6 +1094,9 @@ class Game extends \Table {
                     break;
                 case ACTION_SEEK_DOUBLE_AGENT:
                     return !$this->getHasMarker($spaceID) && !$this->getIsMissionCompleted(MISSION_DOUBLE_AGENT);
+                    break;
+                case ACTION_COMPLETE_DOUBLE_AGENT_MISSION:
+                    return !$this->getIsMissionCompleted(MISSION_DOUBLE_AGENT);
                 default:
                     return true;
                     break;
@@ -1219,7 +1224,7 @@ class Game extends \Table {
         return (bool) $this->getUniqueValueFromDb("
             SELECT completed
             FROM mission
-            WHERE mission_id = '$missionName';
+            WHERE mission_name = '$missionName';
         ");
     } 
 
@@ -1329,7 +1334,7 @@ class Game extends \Table {
             "patrolCardID" => $cardID
         ));
 
-        return $this->PATROL_CARD_ITEMS[$cardID - 1];
+        return $cardID;
     }
 
     // UPDATES

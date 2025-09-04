@@ -1,6 +1,6 @@
 <?php
 
-$this->PATROL_CARD_ITEMS = [
+const PATROL_CARD_ITEMS = [
     ['type' => 'PATROL', 'nbr' => 1, 'type_arg' => 1, 'space_a' => 12, 'space_b' => 6, 'space_c' => 5], // 1. Grocer / Poor District
     ['type' => 'PATROL', 'nbr' => 1, 'type_arg' => 2, 'space_a' => 4, 'space_b' => 12, 'space_c' => 7], // 2. Radio B / Grocer
     ['type' => 'PATROL', 'nbr' => 1, 'type_arg' => 3, 'space_a' => 11, 'space_b' => 3, 'space_c' => 5], // 3. Pont Levaque / Pont Du Nord
