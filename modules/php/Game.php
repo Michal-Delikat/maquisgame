@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * MaquisSolo implementation : © <Your name here> <Your email address here>
+ * Maquis implementation : © Michał Delikat michal.delikat0@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -10,9 +10,6 @@
  *
  * Game.php
  *
- * This is the main file for your game logic.
- *
- * In this PHP file, you are going to defines the rules of the game.
  */
 
 declare(strict_types=1);
@@ -123,6 +120,8 @@ class Game extends \Table {
         $this->activeNextPlayer();
 
         $this->updateResourceQuantity(RESOURCE_INTEL, 2);
+        $this->updateResourceQuantity(RESOURCE_WEAPON, 1);
+        $this->updateResourceQuantity(RESOURCE_EXPLOSIVES, 1);
     }
 
     public function actPlaceWorker(int $spaceID): void {
@@ -511,6 +510,14 @@ class Game extends \Table {
         $this->updateActiveResistance($roundData['active_resistance'] - 1);
     }
 
+    public function returnOrArrest(int $spaceID): void {
+        if ($this->checkEscapeRoute($spaceID)) {
+            $this->returnWorker($spaceID);
+        } else {
+            $this->arrestWorker($spaceID);
+        }
+    }
+
     protected function configureMissions(string $missionAName, string $missionBName): void {
         $this->setSelectedMissions($missionAName, $missionBName);
 
@@ -633,7 +640,7 @@ class Game extends \Table {
 
         $spaceIDs = $this->getSpaceIdsByMissionName($missionName);
         foreach ($spaceIDs as $spaceID) {
-            $this->removeBoardSpace((int) $spaceID["space_id"]);
+            $this->removeBoardSpace((int) $spaceID);
         }
 
         $this->incrementPlayerScore();
@@ -737,6 +744,7 @@ class Game extends \Table {
                 $this->arrestWorker(1);
                 break;
             case ACTION_COMPLETE_OFFICERS_MANSION_MISSION:
+                $this->returnOrArrest($this->getActiveSpace());
                 $this->completeMission(MISSION_OFFICERS_MANSION);
                 foreach([1, 3, 11] as $space) {
                     $this->setHasMarker($space, false);
@@ -771,12 +779,14 @@ class Game extends \Table {
                 break;
             case ACTION_SABOTAGE_FACTORY:
                 $this->updateResourceQuantity(RESOURCE_EXPLOSIVES, -2);
+                $this->returnOrArrest($this->getActiveSpace());
                 $this->completeMission(MISSION_SABOTAGE);
                 break;
             case ACTION_DELIVER_INTEL:
                 $activeSpace = $this->getActiveSpace();
                 $this->updateResourceQuantity(RESOURCE_INTEL, -2);
                 if ($activeSpace == 20 || $activeSpace == 23) {
+                    $this->returnOrArrest($activeSpace);
                     $this->completeMission(MISSION_UNDERGROUND_NEWSPAPER);
                 } else {
                     $this->setHasMarker($activeSpace, true);
@@ -797,6 +807,7 @@ class Game extends \Table {
                 $this->updateResourceQuantity(RESOURCE_EXPLOSIVES, -1);
                 $this->setMoleInserted(false);
                 $this->returnWorker($activeSpace - 1);
+                $this->returnOrArrest($activeSpace);
                 $this->completeMission(MISSION_INFILTRATION);
                 break;
             case ACTION_POISON_SHEPARDS:
@@ -804,6 +815,7 @@ class Game extends \Table {
                 $this->updateResourceQuantity(RESOURCE_FOOD, -1);
                 $this->updateResourceQuantity(RESOURCE_MEDICINE, -1);
                 if ($activeSpace == 20 || $activeSpace == 23) {
+                    $this->returnOrArrest($activeSpace);
                     $this->completeMission(MISSION_GERMAN_SHEPARDS);
                 } else {
                     $this->setHasMarker($activeSpace, true);
@@ -832,7 +844,10 @@ class Game extends \Table {
                 foreach([1, 3, 5, 6, 9, 11] as $space) {
                     $this->setHasMarker($space, false);
                 }
+                break;
         }
+
+        
     } 
 
     // GETTERS
@@ -1319,7 +1334,7 @@ class Game extends \Table {
     protected function peekTopPatrolCardId(): int {
         $this->shuffleIfNeeded();
 
-        $cardId = (int) $this->patrol_cards->getCardOnTop('deck')['id'];
+        $cardId = (int) $this->patrol_cards->getCardOnTop('deck')['type_arg'];
 
         return $cardId;
     } 
@@ -1328,7 +1343,7 @@ class Game extends \Table {
         $this->shuffleIfNeeded();
 
         $card = $this->patrol_cards->pickCardForLocation('deck', 'discard');
-        $cardID = $card['id'];
+        $cardID = $card['type_arg'];
 
         $this->notify->all("patrolCardDiscarded", clienttranslate(""), array(
             "patrolCardID" => $cardID

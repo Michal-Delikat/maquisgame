@@ -1,24 +1,23 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * MaquisSolo implementation : © <Your name here> <Your email address here>
+ * Maquis implementation : © Michał Delikat michal.delikat0@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  *
- * maquissolo.js
+ * maquisgame.js
  *
  * MaquisSolo user interface script
  * 
- * In this file, you are describing the logic of your user interface, in Javascript language.
- *
  */
 
 define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
-    "ebg/counter"
+    "ebg/counter",
+    getLibUrl('bga-animations', '1.x'),
 ],
 function (dojo, declare) {
     return declare("bgagame.maquisgame", ebg.core.gamegui, {
@@ -254,7 +253,9 @@ function (dojo, declare) {
                 <div id="room-tile-${room.room_id}" class="room-tile"></div>
             `, `room-tiles`));
 
-            Object.values(discardedPatrolCards).forEach((card) => this.discardPatrolCard(card.type_arg, false));
+            // PATROL DISCARD
+
+            Object.values(discardedPatrolCards).forEach((card) => this.discardPatrolCard(card.type_arg, true));
 
             // Event Listeners
 
@@ -421,10 +422,15 @@ function (dojo, declare) {
         },
 
         discardPatrolCard: async function(patrolCardID, animate = true) {
-            dojo.place(`<div id="patrol-${patrolCardID}" class="patrol-card card"></div>`, 'patrol-discard');
+            dojo.place(`
+                <div id="patrol-${patrolCardID}" class="card patrol-card">
+                    <div class="card patrol-card-back"></div>
+                    <div class="card patrol-card-front"></div>
+                </div>`, 'patrol-discard');
             if (animate) {
                 this.placeOnObject(`patrol-${patrolCardID}`, 'patrol-deck');
-                const animation = this.slideToObject(`patrol-${patrolCardID}`, `patrol-discard`);
+                const animation = this.slideToObjectPos(`patrol-${patrolCardID}`, `patrol-discard`, 0, 0, 2000);
+                dojo.toggleClass(dojo.byId(`patrol-${patrolCardID}`), 'flipped');
                 await this.bgaPlayDojoAnimation(animation);
             }
         },
@@ -527,7 +533,7 @@ function (dojo, declare) {
             dialog.create('cardDialog');
             dialog.setTitle(title);
             dialog.setContent(`<div id="patrol-${cardId}" class="card patrol-card"></div>`);
-            dialog.resize(200, 300);
+            // dialog.resize(200, 300);
             dialog.show();
         },
 
@@ -597,7 +603,6 @@ function (dojo, declare) {
         },
         
         notif_patrolCardDiscarded: function({patrolCardID}) {
-            console.log("discardedCardId:", patrolCardID);
             this.discardPatrolCard(patrolCardID);
         },
 
@@ -670,15 +675,16 @@ function (dojo, declare) {
         },
 
         notif_cardPeeked: function({cardId}) {
-            console.log("cardId:", cardId);
             this.displayModalWithCard(cardId, "Next Patrol card");
         },
         
         notif_patrolCardsShuffled: function() {
-            console.log("patrolCardShuffled");
+            dojo.query('.patrol-card').forEach(node => {
+                dojo.destroy(node.id);
+            });
         },
 
-        notif_darkLadyFound: function(cardId) {
+        notif_darkLadyFound: function({cardId}) {
             this.displayModalWithCard(cardId, "Dark Lady found at place #1");
         }
    });

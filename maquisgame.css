@@ -1,7 +1,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * MaquisSolo implementation : © <Your name here> <Your email address here>
+ * Maquis implementation : © Michał Delikat michal.delikat0@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -9,7 +9,7 @@
  *
  * maquissolo.css
  *
- * MaquisSolo stylesheet
+ * Maquis stylesheet
  *
  */
 
@@ -271,7 +271,6 @@
 
 .mission-card-back {
     background-position-x: 66.7%;
-    /* backface-visibility: visible; */
     transform: rotateY(180deg);
 }
 
@@ -353,7 +352,7 @@
 }
 
 #cards > * {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 }
 
 #help-card {
@@ -590,53 +589,71 @@
 
 .patrol-card {
     position: absolute;
-    background-image: url('img/Patrol_cards.jpg');
-    background-repeat: no-repeat;
-    background-size: 503%;
-    z-index: -1
 }
 
-#patrol-1 {
+.patrol-card-front {
+    background-image: url('img/Patrol_cards.jpg');
+    background-size: 500%;
+    background-repeat: no-repeat;
+}
+
+.patrol-card-front, .patrol-card-back {
+    position: absolute;
+    backface-visibility: hidden;
+    border: none;
+}
+
+.patrol-card-front {
+    transform: rotateY(180deg);
+}
+
+.patrol-card-back {
+    background-image: url('img/Tracking_card_Patrol_back.jpg');
+    background-size: 200%;
+    background-position-x: right;
+}
+
+#patrol-1 > .patrol-card-front {
     background-position-x: 49%;
 }
 
-#patrol-2 {
+#patrol-2 > .patrol-card-front {
     background-position-x: 24%;
 }
 
-#patrol-3 {
+#patrol-3 > .patrol-card-front {
     background-position-x: 0%;
 }
 
-#patrol-4 {
+#patrol-4 > .patrol-card-front {
     background-position-x: 24%;
     background-position-y: 100%;
 }
 
-#patrol-5 {
+#patrol-5 > .patrol-card-front {
     background-position-x: 0;
     background-position-y: 100%;
 }
 
-#patrol-6 {
+#patrol-6 > .patrol-card-front {
     background-position-x: 99%;
 }
 
-#patrol-7 {
+#patrol-7 > .patrol-card-front {
     background-position-x: 74%;
 }
 
-#patrol-8 {
+#patrol-8 > .patrol-card-front {
     background-position-x: 99%;
     background-position-y: 100%;
 }
 
-#patrol-9 {
+#patrol-9 > .patrol-card-front {
     background-position-x: 74%;
     background-position-y: 100%;
 }
 
-#patrol-10 {
+#patrol-10 > .patrol-card-front {
     background-position-x: 49%;
     background-position-y: 100%;
 }
