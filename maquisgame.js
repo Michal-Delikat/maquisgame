@@ -249,9 +249,12 @@ function (dojo, declare) {
             
             // ROOM TILES
             
-            rooms.forEach((room, i) => dojo.place(`
+            rooms.forEach((room) => dojo.place(`
                     <div id="${room.room_id}-tile-container" class="room-tile-container">
-                        <div id="room-tile-${room.room_id}" class="room-tile"></div>
+                        <div id="room-tile-${room.room_id}" class="room-tile">
+                            <div class="circle-shape"></div>
+                            <div class="rectangle-shape"></div>
+                        </div>
                     <div>
                 `, `room-tiles`));
             
@@ -527,7 +530,11 @@ function (dojo, declare) {
 
         placeRoomTile: async function(spaceID, roomID, animate = true) {
             dojo.destroy(`room-tile-${roomID}`);
-            dojo.place(`<div id="room-tile-${roomID}" class="room-tile"></div>`, `space-${spaceID}-room-tile-space`);
+            dojo.place(`
+                <div id="room-tile-${roomID}" class="room-tile">
+                    <div class="circle-shape"></div>
+                    <div class="rectangle-shape"></div>
+                </div>`, `space-${spaceID}-room-tile-space`);
             if (animate) {
                 this.placeOnObject(`room-tile-${roomID}`, `${roomID}-tile-container`);
                 const slideAnimation = this.slideToObjectPos(`room-tile-${roomID}`, `space-${spaceID}-room-tile-space`, 0, 0, 1000);

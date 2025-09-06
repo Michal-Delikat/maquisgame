@@ -51,7 +51,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 5px;
-    background-color: #fefae1;
+    background-color: #f9f4d3;
 }
 
 #game_play_area {
@@ -68,7 +68,7 @@
 }
 
 .player-board {
-    background-color: #fefae1;
+    background-color: #f9f4d3;
 }
 
 #custom-player-board {
@@ -765,7 +765,34 @@
     z-index: 0;
     background-image: url('img/Spare_rooms2.png');
     background-size: 300%;
+    display: flex;
+    justify-content: center;
 }
+
+.room-tile > .circle-shape {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid black;
+    width: 90%;
+    height: 90%;
+}
+
+.room-tile > .rectangle-shape {
+    position: absolute;
+    background-image: url('img/Spare_rooms2.png');
+    background-size: 450%;
+    background-position-x: 7.1%;
+    background-position-y: 27.8%;
+    width: 66%;
+    height: 20%;
+    border: 3px solid black;
+    border-top: none;
+    bottom: 0;
+    -webkit-mask-composite: destination-out; /* subtract rectangle */
+    mask-composite: subtract;
+}
+
+
 
 @media (min-width: 1680px) {
     .room-tile {
@@ -778,8 +805,16 @@
     background-position-x: center;
 }
 
+#room-tile-2 > .rectangle-shape, #room-tile-5 > .rectangle-shape {
+    background-position-x: 49.9%;
+}
+
 #room-tile-3 {
     background-position-x: right;
+}
+
+#room-tile-3 > .rectangle-shape, #room-tile-6 > .rectangle-shape {
+    background-position-x: 92.9%;
 }
 
 #room-tile-4 {
@@ -796,7 +831,11 @@
     background-position-x: right;
 }
 
-#room-tile-7 {
+#room-tile-4 > .rectangle-shape, #room-tile-5 > .rectangle-shape, #room-tile-6 > .rectangle-shape {
+    background-position-y: 63.5%;
+}
+
+/* #room-tile-7 {
     background-position-y: bottom;
 }
 
@@ -809,3 +848,7 @@
     background-position-y: bottom;
     background-position-x: right;
 }
+
+#room-tile-7 > .rectangle-shape, #room-tile-8 > .rectangle-shape, #room-tile-9 > .rectangle-shape {
+    background-position-y: 63.5%;
+} */

@@ -196,10 +196,7 @@ class DataService {
             ("' . ROOM_SAFE_HOUSE . '"),
             ("' . ROOM_CHEMISTS_LAB . '"),
             ("' . ROOM_SMUGGLER . '"),
-            ("' . ROOM_PROPAGANDIST . '"),
-            ("' . ROOM_FIXER . '"),
-            ("' . ROOM_PHARMACIST . '"),
-            ("' . ROOM_FORGER . '");
+            ("' . ROOM_PROPAGANDIST . '");
         ';
     }
 }
