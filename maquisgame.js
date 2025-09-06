@@ -160,15 +160,18 @@ function (dojo, declare) {
                         <div id="round-number-spaces"></div>
                     </div>
                 </div>
-                <div id="cards">
-                    <div id="morale-and-soldiers-track" class="card">
-                        <div id="morale-track"></div>
-                        <div id="soldiers-track"></div>
+                <div id="right-panel">
+                    <div id="cards">
+                        <div id="morale-and-soldiers-track" class="card">
+                            <div id="morale-track"></div>
+                            <div id="soldiers-track"></div>
+                        </div>
+                        <div id="patrol-deck" class="card"></div>
+                        <div id="patrol-card-resolve-area" class="card"></div>
+                        <div id="patrol-discard" class="card"></div>
                     </div>
-                    <div id="patrol-deck" class="card"></div>
-                    <div id="patrol-discard" class="card"></div>
+                    <div id="room-tiles"></div>
                 </div>
-                <div id="room-tiles"></div>
             `, 'game_play_area');
 
             // FLIP MISSIONS 
@@ -243,16 +246,18 @@ function (dojo, declare) {
                 this.placeItems(space.space_id, space.item, space.quantity, false);
             });
 
-            spacesWithRooms.forEach(space => {
-                this.placeRoomTile(space.space_id, space.room_id);
-            });
-
+            
             // ROOM TILES
-
-            rooms.filter(room => parseInt(room.available)).forEach((room, i) => dojo.place(`
-                <div id="room-tile-${room.room_id}" class="room-tile"></div>
-            `, `room-tiles`));
-
+            
+            rooms.forEach((room, i) => dojo.place(`
+                    <div id="${room.room_id}-tile-container" class="room-tile-container">
+                        <div id="room-tile-${room.room_id}" class="room-tile"></div>
+                    <div>
+                `, `room-tiles`));
+            
+            spacesWithRooms.forEach(space => {
+                this.placeRoomTile(space.space_id, space.room_id, false);
+            });
             // PATROL DISCARD
 
             Object.values(discardedPatrolCards).forEach((card) => this.discardPatrolCard(card.type_arg, true));
@@ -429,9 +434,9 @@ function (dojo, declare) {
                 </div>`, 'patrol-discard');
             if (animate) {
                 this.placeOnObject(`patrol-${patrolCardID}`, 'patrol-deck');
-                const animation = this.slideToObjectPos(`patrol-${patrolCardID}`, `patrol-discard`, 0, 0, 2000);
                 dojo.toggleClass(dojo.byId(`patrol-${patrolCardID}`), 'flipped');
-                await this.bgaPlayDojoAnimation(animation);
+                const slideAnimation = this.slideToObjectPos(`patrol-${patrolCardID}`, `patrol-discard`, 0, 0, 2000);
+                await this.bgaPlayDojoAnimation(slideAnimation);
             }
         },
 
@@ -520,12 +525,19 @@ function (dojo, declare) {
             dojo.toggleClass(dojo.byId(`mission-${missionID}`), 'flipped');
         },
 
-        moveRoomTile: async function(spaceID, roomID) {
-
-        },
-
-        placeRoomTile: async function(spaceID, roomID) {
+        placeRoomTile: async function(spaceID, roomID, animate = true) {
+            dojo.destroy(`room-tile-${roomID}`);
             dojo.place(`<div id="room-tile-${roomID}" class="room-tile"></div>`, `space-${spaceID}-room-tile-space`);
+            if (animate) {
+                this.placeOnObject(`room-tile-${roomID}`, `${roomID}-tile-container`);
+                const slideAnimation = this.slideToObjectPos(`room-tile-${roomID}`, `space-${spaceID}-room-tile-space`, 0, 0, 1000);
+                await this.bgaPlayDojoAnimation(slideAnimation);
+                const node = dojo.query(`#${roomID}-tile-container`)[0];
+                this.smoothRemove(node);
+            } else {
+                dojo.destroy(`${roomID}-tile-container`);
+            }
+            
         },
 
         displayModalWithCard: function(cardId, title) {
@@ -686,6 +698,46 @@ function (dojo, declare) {
 
         notif_darkLadyFound: function({cardId}) {
             this.displayModalWithCard(cardId, "Dark Lady found at place #1");
+        },
+
+        // UTILITY
+
+        smoothRemove: function(node) {
+            const container = node.parentNode;
+            const children = Array.from(container.children);
+
+            // --- F: record first positions ---
+            const firstRects = new Map();
+            children.forEach(child => {
+                firstRects.set(child, child.getBoundingClientRect());
+            });
+
+            // --- L: remove the node ---
+            dojo.destroy(node);
+
+            // --- L: record last positions ---
+            children.forEach(child => {
+                const lastRect = child.getBoundingClientRect();
+                const firstRect = firstRects.get(child);
+
+                if (!firstRect) return;
+
+                // --- I: calculate deltas ---
+                const dx = firstRect.left - lastRect.left;
+                const dy = firstRect.top - lastRect.top;
+
+                // Apply transform to invert position
+                child.style.transform = `translate(${dx}px, ${dy}px)`;
+                child.style.transition = "none"; // prevent immediate jump
+            });
+
+            // --- P: force reflow, then animate back ---
+            requestAnimationFrame(() => {
+                children.forEach(child => {
+                    child.style.transition = "transform 300ms ease";
+                    child.style.transform = "none";
+                });
+            });
         }
-   });
+    });
 });

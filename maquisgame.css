@@ -236,7 +236,8 @@
 
 @media (min-width: 1680px) {
     #board-and-missions {
-        width: 40vw;
+        width: 53%;
+        margin-right: 2%;
     }
 }
 
@@ -341,14 +342,15 @@
     background-position-y: bottom;
 }
 
-#left-area > * {
-    padding: 5%;
+#cards {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-between;
 }
 
-#cards {
-    padding-right: 32px;
+@media (min-width: 1680px) {
+    #right-panel {
+        width: 45%;
+    }
 }
 
 #cards > * {
@@ -455,14 +457,14 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    left: -4%;
+    left: -5%;
     top: -2%;
 }
 
 @media (min-width: 1680px) {
     .room-tile-space > .room-tile {
-        width: 6.15vw;
-        height: 6.15vw;
+        width: 7.05vw;
+        height: 7.05vw;
     }
 }
 
@@ -745,13 +747,19 @@
 
 #room-tiles {
     position: relative;
-    width: 318px;
+    width: 100%;
     height: fit-content;
     display: flex;
     flex-wrap: wrap;
 }
 
+.room-tile-container {
+    width: 7vw;
+    height: 7vw;
+}
+
 .room-tile {
+    position: absolute;
     width: 106px;
     height: 106px;
     z-index: 0;
@@ -760,13 +768,9 @@
 }
 
 @media (min-width: 1680px) {
-    #room-tiles {
-        width: 20vw;
-    }
-
     .room-tile {
-        width: 6.65vw;
-        height: 6.65vw;
+        width: 7.05vw;
+        height: 7.05vw;
     }
 }
 

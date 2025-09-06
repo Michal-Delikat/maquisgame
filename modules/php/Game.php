@@ -119,9 +119,7 @@ class Game extends \Table {
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
 
-        $this->updateResourceQuantity(RESOURCE_INTEL, 2);
-        $this->updateResourceQuantity(RESOURCE_WEAPON, 1);
-        $this->updateResourceQuantity(RESOURCE_EXPLOSIVES, 1);
+        $this->updateResourceQuantity(RESOURCE_MONEY, 2);
     }
 
     public function actPlaceWorker(int $spaceID): void {
